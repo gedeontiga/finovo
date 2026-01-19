@@ -6,7 +6,7 @@ import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
-import { FormInput } from '@/components/form-input';
+import { FormInput } from '@/components/forms/form-input';
 import { Form } from '@/components/ui/form';
 
 const formSchema = z.object({

@@ -1,136 +1,93 @@
 import PageContainer from '@/components/layout/page-container';
-import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardAction,
-  CardFooter
-} from '@/components/ui/card';
-import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
-import React from 'react';
+import { getBudgetSummary } from '@/actions/dashboard-analytics';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { IconCoin, IconActivity, IconChartPie } from '@tabler/icons-react';
+import { Progress } from '@/components/ui/progress';
+import { APP_TEXTS } from '@/lib/constants';
 
-export default function OverViewLayout({
-  sales,
-  pie_stats,
-  bar_stats,
-  area_stats
+export default async function OverviewLayout({
+  children,
+  bar_stats
 }: {
-  sales: React.ReactNode;
-  pie_stats: React.ReactNode;
+  children: React.ReactNode;
   bar_stats: React.ReactNode;
-  area_stats: React.ReactNode;
 }) {
+  const stats = await getBudgetSummary();
+
+  const fmt = (n: number) => new Intl.NumberFormat('fr-FR', {
+    style: 'currency', currency: 'XAF', maximumSignificantDigits: 3
+  }).format(n);
+
   return (
     <PageContainer>
-      <div className='flex flex-1 flex-col space-y-2'>
+      <div className='flex flex-1 flex-col space-y-4'>
         <div className='flex items-center justify-between space-y-2'>
           <h2 className='text-2xl font-bold tracking-tight'>
-            Hi, Welcome back 👋
+            {APP_TEXTS.dashboard.overview.title}
           </h2>
         </div>
 
-        <div className='*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4'>
-          <Card className='@container/card'>
-            <CardHeader>
-              <CardDescription>Total Revenue</CardDescription>
-              <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                $1,250.00
+        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                {APP_TEXTS.dashboard.overview.ae.label}
               </CardTitle>
-              <CardAction>
-                <Badge variant='outline'>
-                  <IconTrendingUp />
-                  +12.5%
-                </Badge>
-              </CardAction>
+              <IconCoin className='h-4 w-4 text-muted-foreground' />
             </CardHeader>
-            <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Trending up this month <IconTrendingUp className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>
-                Visitors for the last 6 months
-              </div>
-            </CardFooter>
+            <CardContent>
+              <div className='text-2xl font-bold'>{fmt(stats.ae)}</div>
+              <p className='text-xs text-muted-foreground'>
+                {APP_TEXTS.dashboard.overview.ae.description}
+              </p>
+            </CardContent>
           </Card>
-          <Card className='@container/card'>
-            <CardHeader>
-              <CardDescription>New Customers</CardDescription>
-              <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                1,234
+
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                {APP_TEXTS.dashboard.overview.cp.label}
               </CardTitle>
-              <CardAction>
-                <Badge variant='outline'>
-                  <IconTrendingDown />
-                  -20%
-                </Badge>
-              </CardAction>
+              <IconChartPie className='h-4 w-4 text-muted-foreground' />
             </CardHeader>
-            <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Down 20% this period <IconTrendingDown className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>
-                Acquisition needs attention
-              </div>
-            </CardFooter>
+            <CardContent>
+              <div className='text-2xl font-bold'>{fmt(stats.cp)}</div>
+              <p className='text-xs text-muted-foreground'>
+                {APP_TEXTS.dashboard.overview.cp.description}
+              </p>
+            </CardContent>
           </Card>
-          <Card className='@container/card'>
-            <CardHeader>
-              <CardDescription>Active Accounts</CardDescription>
-              <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                45,678
+
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                {APP_TEXTS.dashboard.overview.executed.label}
               </CardTitle>
-              <CardAction>
-                <Badge variant='outline'>
-                  <IconTrendingUp />
-                  +12.5%
-                </Badge>
-              </CardAction>
+              <IconActivity className='h-4 w-4 text-muted-foreground' />
             </CardHeader>
-            <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Strong user retention <IconTrendingUp className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>
-                Engagement exceed targets
-              </div>
-            </CardFooter>
+            <CardContent>
+              <div className='text-2xl font-bold'>{stats.executionRate.toFixed(2)}%</div>
+              <Progress value={stats.executionRate} className='mt-2 h-2' />
+            </CardContent>
           </Card>
-          <Card className='@container/card'>
-            <CardHeader>
-              <CardDescription>Growth Rate</CardDescription>
-              <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                4.5%
+
+          <Card>
+            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+              <CardTitle className='text-sm font-medium'>
+                {APP_TEXTS.dashboard.overview.lines.label}
               </CardTitle>
-              <CardAction>
-                <Badge variant='outline'>
-                  <IconTrendingUp />
-                  +4.5%
-                </Badge>
-              </CardAction>
             </CardHeader>
-            <CardFooter className='flex-col items-start gap-1.5 text-sm'>
-              <div className='line-clamp-1 flex gap-2 font-medium'>
-                Steady performance increase{' '}
-                <IconTrendingUp className='size-4' />
-              </div>
-              <div className='text-muted-foreground'>
-                Meets growth projections
-              </div>
-            </CardFooter>
+            <CardContent>
+              <div className='text-2xl font-bold'>{stats.linesCount}</div>
+              <p className='text-xs text-muted-foreground'>
+                {APP_TEXTS.dashboard.overview.lines.description}
+              </p>
+            </CardContent>
           </Card>
         </div>
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
-          <div className='col-span-4'>{bar_stats}</div>
-          <div className='col-span-4 md:col-span-3'>
-            {/* sales arallel routes */}
-            {sales}
-          </div>
-          <div className='col-span-4'>{area_stats}</div>
-          <div className='col-span-4 md:col-span-3'>{pie_stats}</div>
-        </div>
+
+        {/* Bar stats render here */}
+        {bar_stats}
       </div>
     </PageContainer>
   );

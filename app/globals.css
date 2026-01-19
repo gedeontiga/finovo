@@ -162,9 +162,9 @@
 /* Custom Finovo Gradient Utility */
 @layer utilities {
   .text-gradient-finovo {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-[#ff6f26] to-[#3bd697];
+    @apply bg-clip-text text-transparent bg-linear-to-br from-[#fe9a00] to-[#262626];
   }
   .bg-gradient-finovo {
-    @apply bg-gradient-to-br from-[#001d5e] to-[#009cb8];
+    @apply bg-linear-to-br from-[#0a0a0a] to-[#262626];
   }
 }

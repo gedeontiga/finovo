@@ -24,12 +24,10 @@ export default function SignInViewPage() {
       </Link>
       <div className='bg-muted relative hidden h-full flex-col p-10 lg:flex dark:border-r'>
         <div className='absolute inset-0 bg-gradient-finovo' />
-        <Link href="/dashboard/overview" className="relative z-10">
-          <div className="flex items-center text-lg font-medium tracking-tight">
-            <img src="/finovo-icon.png" alt="Finovo Icon" className="mr-2" width="24" height="24" />
-            <span className="font-bold text-2xl text-gradient-finovo">Finovo</span>
-          </div>
-        </Link>
+        <div className="relative z-10 flex items-center text-lg font-medium tracking-tight">
+          <img src="/finovo-icon.png" alt="Finovo Icon" className="mr-2" width="32" height="32" />
+          <span className="font-bold text-2xl text-gradient-finovo">Finovo</span>
+        </div>
         <InteractiveGridPattern
           className={cn(
             'mask-[radial-gradient(400px_circle_at_center,gray,transparent)]',

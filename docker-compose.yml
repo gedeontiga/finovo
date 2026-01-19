@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5433"
+    environment:
+      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+    networks:
+      - finovo_network
+networks:
+  finovo_network:
+    driver: bridge

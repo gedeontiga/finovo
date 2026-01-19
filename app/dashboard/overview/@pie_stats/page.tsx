@@ -1,5 +1,7 @@
-import { PieGraph } from '@/views/overview/components/pie-graph';
+import { getAdminUnitStats } from "@/actions/dashboard-analytics";
+import { BudgetPieGraph } from "@/views/dashboard/overview/components/pie-graph";
 
-export default async function Stats() {
-  return <PieGraph />;
+export default async function PieStats() {
+  const data = await getAdminUnitStats();
+  return <BudgetPieGraph data={data} />;
 }

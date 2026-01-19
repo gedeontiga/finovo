@@ -1,7 +1,8 @@
-import ProfileViewPage from '@/views/profile/profile-view-page';
+import ProfileViewPage from '@/views/dashboard/profile/profile-view-page';
+import { APP_TEXTS } from '@/lib/constants';
 
 export const metadata = {
-  title: 'Dashboard : Profile'
+  title: APP_TEXTS.profile.title
 };
 
 export default async function Page() {

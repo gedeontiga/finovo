@@ -23,18 +23,13 @@ import {
   IconSettings,
   IconSun,
   IconTrash,
-  IconBrandTwitter,
   IconUser,
   IconUserCircle,
   IconUserEdit,
   IconUserX,
   IconX,
-  IconLayoutKanban,
-  IconBrandGithub,
   IconFolder,
   IconUsers,
-  IconCrown,
-  IconStar,
   IconBox
 } from '@tabler/icons-react';
 
@@ -47,7 +42,6 @@ export const Icons = {
   close: IconX,
   product: IconBox,
   spinner: IconLoader2,
-  kanban: IconLayoutKanban,
   chevronLeft: IconChevronLeft,
   chevronRight: IconChevronRight,
   trash: IconTrash,
@@ -69,13 +63,9 @@ export const Icons = {
   sun: IconSun,
   moon: IconMoon,
   laptop: IconDeviceLaptop,
-  github: IconBrandGithub,
-  twitter: IconBrandTwitter,
   check: IconCheck,
   workspace: IconFolder,
   teams: IconUsers,
-  pro: IconCrown,
-  exclusive: IconStar,
   account: IconUserCircle,
   profile: IconUser
 };

@@ -5,77 +5,94 @@ import {
   decimal,
   integer,
   timestamp,
+  uniqueIndex,
   boolean,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 
-// --- TABLES ---
-
+// 1. Fiscal Year
 export const fiscalYears = pgTable("fiscal_years", {
   id: serial("id").primaryKey(),
-  year: integer("year").notNull().unique(),
+  year: integer("year").notNull().unique(), // e.g. 2023
+  name: text("name"), // e.g. "Budget Initial"
   isActive: boolean("is_active").default(true),
 });
 
-export const programs = pgTable("programs", {
-  id: serial("id").primaryKey(),
-  code: text("code").notNull(),
-  name: text("name").notNull(),
-  fiscalYearId: integer("fiscal_year_id").references(() => fiscalYears.id),
-});
+// 2. Programs
+export const programs = pgTable(
+  "programs",
+  {
+    id: serial("id").primaryKey(),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+  },
+  (t) => ({
+    unq: uniqueIndex("program_code_idx").on(t.code),
+  }),
+);
 
-export const actions = pgTable("actions", {
-  id: serial("id").primaryKey(),
-  programId: integer("program_id").references(() => programs.id),
-  code: text("code"),
-  name: text("name").notNull(),
-});
+// 3. Actions
+export const actions = pgTable(
+  "actions",
+  {
+    id: serial("id").primaryKey(),
+    programId: integer("program_id")
+      .references(() => programs.id)
+      .notNull(),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+  },
+  (t) => ({
+    unq: uniqueIndex("action_prog_code_idx").on(t.programId, t.code),
+  }),
+);
 
-export const activities = pgTable("activities", {
-  id: serial("id").primaryKey(),
-  actionId: integer("action_id").references(() => actions.id),
-  code: text("code"),
-  name: text("name").notNull(),
-  administrativeUnit: text("admin_unit"),
-});
+// 4. Activities
+export const activities = pgTable(
+  "activities",
+  {
+    id: serial("id").primaryKey(),
+    actionId: integer("action_id")
+      .references(() => actions.id)
+      .notNull(),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+  },
+  (t) => ({
+    unq: uniqueIndex("activity_action_code_idx").on(t.actionId, t.code),
+  }),
+);
 
+// 5. Admin Units
+export const adminUnits = pgTable(
+  "admin_units",
+  {
+    id: serial("id").primaryKey(),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+  },
+  (t) => ({
+    unq: uniqueIndex("admin_code_idx").on(t.code),
+  }),
+);
+
+// 6. Budget Lines
 export const budgetLines = pgTable("budget_lines", {
   id: serial("id").primaryKey(),
-  activityId: integer("activity_id").references(() => activities.id),
+
+  // Link to Fiscal Year (NEW)
+  fiscalYearId: integer("fiscal_year_id").references(() => fiscalYears.id),
+
+  activityId: integer("activity_id")
+    .references(() => activities.id)
+    .notNull(),
+  adminUnitId: integer("admin_unit_id").references(() => adminUnits.id),
+
   paragraphCode: text("paragraph_code").notNull(),
   paragraphName: text("paragraph_name").notNull(),
+
   ae: decimal("ae", { precision: 20, scale: 2 }).default("0"),
   cp: decimal("cp", { precision: 20, scale: 2 }).default("0"),
-  committed: decimal("committed", { precision: 20, scale: 2 }).default("0"),
+  engaged: decimal("engaged", { precision: 20, scale: 2 }).default("0"),
+
   createdAt: timestamp("created_at").defaultNow(),
 });
-
-// --- RELATIONS (Fixed) ---
-
-export const programsRelations = relations(programs, ({ many }) => ({
-  actions: many(actions),
-}));
-
-export const actionsRelations = relations(actions, ({ one, many }) => ({
-  // FIX: Destructure 'one' and 'many' from the callback argument
-  program: one(programs, {
-    fields: [actions.programId],
-    references: [programs.id],
-  }),
-  activities: many(activities),
-}));
-
-export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  action: one(actions, {
-    fields: [activities.actionId],
-    references: [actions.id],
-  }),
-  budgetLines: many(budgetLines),
-}));
-
-export const budgetLinesRelations = relations(budgetLines, ({ one }) => ({
-  activity: one(activities, {
-    fields: [budgetLines.activityId],
-    references: [activities.id],
-  }),
-}));
