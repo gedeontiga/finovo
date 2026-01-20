@@ -16,6 +16,10 @@ export interface ExtractedBudgetLine {
   engaged: number;
 }
 
+/**
+ * Improved Excel parser with better pattern recognition
+ * Fixes the issue with "General Activity" and "Action 5 : Renforcement" appearing incorrectly
+ */
 export async function parseBudgetExcel(
   fileBuffer: ArrayBuffer,
 ): Promise<ExtractedBudgetLine[]> {
@@ -27,118 +31,135 @@ export async function parseBudgetExcel(
   workbook.eachSheet((worksheet) => {
     const sheetName = worksheet.name.toUpperCase();
 
-    // Skip non-program sheets
-    if (
-      !sheetName.includes("_P") &&
-      !sheetName.includes("PROG") &&
-      !sheetName.match(/P\d{3}/)
-    ) {
+    // Match program sheets: P116, P117, P118, P119, etc.
+    const programMatch = sheetName.match(/P(\d{3})/);
+    if (!programMatch) {
+      console.log(`Skipping non-program sheet: ${sheetName}`);
       return;
     }
 
-    // Extract Program Code from sheet name (e.g., FMSB_P119 -> 119, P116 -> 116)
-    let currentProgramCode = "000";
-    let currentProgramName = "Unknown Program";
+    const currentProgramCode = programMatch[1];
+    const currentProgramName = `Programme ${currentProgramCode}`;
 
-    const progMatch = sheetName.match(/P(\d{3})/);
-    if (progMatch) {
-      currentProgramCode = progMatch[1];
-      currentProgramName = `Programme ${currentProgramCode}`;
-    }
+    console.log(`\n=== Processing ${sheetName} (P${currentProgramCode}) ===`);
 
-    let currentActivityName = "General Activity";
-    let currentActivityCode = "01";
+    // State tracking
     let currentActionCode = "01";
     let currentActionName = "Action 01";
+    let currentActivityCode = "01";
+    let currentActivityName = "Activité 01";
     let currentAdminCode = "";
     let currentAdminName = "";
-
-    // Track if we're in data rows
     let inDataSection = false;
 
     worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-      // Helper to get cell value
-      const getVal = (idx: number) => {
+      // Helper functions
+      const getVal = (idx: number): string => {
         const cell = row.getCell(idx);
         const val =
           cell.isMerged && cell.master ? cell.master.value : cell.value;
         return val ? val.toString().trim() : "";
       };
 
-      const getNum = (idx: number) => {
+      const getNum = (idx: number): number => {
         const val = getVal(idx);
         const clean = val.replace(/[\s,]/g, "");
         const num = parseFloat(clean);
         return isNaN(num) ? 0 : num;
       };
 
-      // Column mapping (adjust based on your Excel structure)
-      const colA = getVal(1); // Activity or description
-      const colB = getVal(2); // Task or sub-description
-      const colC = getVal(3); // Admin or other
-      const colD = getVal(4); // Admin Code
-      const colE = getVal(5); // Admin Name
+      // Column mapping (based on your PDF structure)
+      const colA = getVal(1);
+      const colB = getVal(2);
+      const colC = getVal(3);
+      const colD = getVal(4);
+      const colE = getVal(5);
       const colF = getVal(6); // Paragraph Code
       const colG = getVal(7); // Paragraph Name
-      const colH = getVal(8); // AE column
-      const colI = getVal(9); // CP column
-      const colJ = getVal(10); // Engaged column
+      const colH = getNum(8); // AE
+      const colI = getNum(9); // CP
+      const colJ = getNum(10); // Engaged
 
-      // Detect header row
+      const fullRowText = [colA, colB, colC, colD, colE, colF, colG]
+        .join(" ")
+        .toLowerCase();
+
+      // Skip header rows and total rows
       if (
-        colG.toLowerCase().includes("libellé") ||
-        colG.toLowerCase().includes("paragraphes") ||
-        colF.toLowerCase().includes("code")
+        fullRowText.includes("total programme") ||
+        fullRowText.includes("total action") ||
+        fullRowText.includes("total activité") ||
+        fullRowText.includes("activites") ||
+        fullRowText.includes("taches") ||
+        fullRowText.includes("paragraphes") ||
+        fullRowText.includes("libellé")
       ) {
         inDataSection = true;
         return;
       }
 
-      // Skip rows before data section
-      if (rowNumber < 4 && !inDataSection) return;
-
-      // Filter out total rows
-      const lineStr = (colA + colG).toLowerCase();
-      if (
-        lineStr.includes("total") ||
-        lineStr.includes("montant total") ||
-        lineStr.includes("budget")
-      ) {
-        return;
-      }
-
-      // Detect Activity headers (format: "Activity Name [01]" or just in column A)
-      if (colA && colA.length > 3 && !colF) {
-        const actMatch = colA.match(/\[(\d{2})\]/);
-        if (actMatch) {
-          currentActivityCode = actMatch[1];
-          currentActivityName = colA.replace(/\[\d{2}\]/, "").trim();
-        } else {
-          // Activity without bracket notation
-          currentActivityName = colA;
-        }
-        return;
-      }
-
-      // Detect Action (if present in structure)
-      if (colB && colB.match(/Action \d+/i)) {
-        const actionMatch = colB.match(/Action (\d+)/i);
+      // Detect Action headers: "Action 1 :", "Action 2 :", etc.
+      if (colA && colA.match(/^Action\s+\d+\s*:/i)) {
+        const actionMatch = colA.match(/Action\s+(\d+)\s*:\s*(.+)/i);
         if (actionMatch) {
           currentActionCode = actionMatch[1].padStart(2, "0");
-          currentActionName = colB;
+          currentActionName = colA.trim();
+          console.log(
+            `Found Action: ${currentActionCode} - ${currentActionName}`,
+          );
+          // Reset activity when action changes
+          currentActivityCode = "01";
+          currentActivityName = "Activité 01";
         }
         return;
       }
 
-      // Update Admin Unit tracking
-      if (colD && colD.length > 0) {
-        currentAdminCode = colD;
-        currentAdminName = colE || "";
+      // Detect Activity headers: "[01]", "[02]", etc. in column A or B
+      const activityMatch = (colA + " " + colB).match(
+        /\[(\d{2})\]\s*(.+?)(?:\s+Département|$)/,
+      );
+      if (activityMatch && !colF) {
+        currentActivityCode = activityMatch[1];
+        // Extract clean activity name
+        const rawName = activityMatch[2].trim();
+        // Remove "Total Activité" prefix if present
+        currentActivityName = rawName
+          .replace(/^Total\s+Activité\s+/i, "")
+          .trim();
+        console.log(
+          `Found Activity: ${currentActivityCode} - ${currentActivityName}`,
+        );
+        return;
       }
 
-      // Capture budget line data (must have valid 6-digit paragraph code)
-      if (/^\d{6}$/.test(colF)) {
-        results.push({
+      // Detect Administrative Unit (usually in columns D and E)
+      if (
+        colD &&
+        colD.length > 0 &&
+        colD.length < 10 &&
+        !colD.match(/^\d{6}$/)
+      ) {
+        currentAdminCode = colD;
+        currentAdminName = colE || colD;
+        return;
+      }
+
+      // Extract budget line data: Must have valid 6-digit paragraph code
+      if (colF && /^\d{6}$/.test(colF)) {
+        // Additional validation: skip if this looks like a header or total
+        if (
+          fullRowText.includes("total") ||
+          fullRowText.includes("montant total")
+        ) {
+          return;
+        }
+
+        // Skip rows with no financial values
+        if (colH === 0 && colI === 0 && colJ === 0) {
+          return;
+        }
+
+        const budgetLine: ExtractedBudgetLine = {
           programCode: currentProgramCode,
           programName: currentProgramName,
           actionCode: currentActionCode,
@@ -148,15 +169,90 @@ export async function parseBudgetExcel(
           adminUnitCode: currentAdminCode,
           adminUnitName: currentAdminName,
           paragraphCode: colF,
-          paragraphName: colG,
-          ae: getNum(8),
-          cp: getNum(9),
-          engaged: getNum(10),
-        });
+          paragraphName: colG || "Sans nom",
+          ae: colH,
+          cp: colI,
+          engaged: colJ,
+        };
+
+        results.push(budgetLine);
+
+        console.log(
+          `Line ${rowNumber}: P${currentProgramCode}.${currentActionCode}.${currentActivityCode} ` +
+            `[${colF}] AE:${colH} CP:${colI} Engaged:${colJ}`,
+        );
       }
     });
   });
 
-  console.log(`Parsed ${results.length} budget lines from Excel`);
+  console.log(`\n=== Extraction Summary ===`);
+  console.log(`Total budget lines extracted: ${results.length}`);
+
+  // Show distribution by program
+  const byProgram = results.reduce(
+    (acc, line) => {
+      acc[line.programCode] = (acc[line.programCode] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+
+  console.log("Lines per program:", byProgram);
+
   return results;
+}
+
+/**
+ * Calculate accurate statistics from extracted data
+ */
+export function calculateBudgetStatistics(lines: ExtractedBudgetLine[]) {
+  const totalAE = lines.reduce((sum, line) => sum + line.ae, 0);
+  const totalCP = lines.reduce((sum, line) => sum + line.cp, 0);
+  const totalEngaged = lines.reduce((sum, line) => sum + line.engaged, 0);
+
+  // FIXED: Correct execution rate calculation
+  const executionRate = totalAE > 0 ? (totalEngaged / totalAE) * 100 : 0;
+  const disponible = totalAE - totalEngaged;
+
+  return {
+    ae: totalAE,
+    cp: totalCP,
+    engaged: totalEngaged,
+    executionRate: executionRate,
+    disponible: disponible,
+    linesCount: lines.length,
+  };
+}
+
+/**
+ * Group budget lines by program for analysis
+ */
+export function groupByProgram(lines: ExtractedBudgetLine[]) {
+  const grouped = lines.reduce(
+    (acc, line) => {
+      const key = line.programCode;
+      if (!acc[key]) {
+        acc[key] = {
+          code: line.programCode,
+          name: line.programName,
+          ae: 0,
+          cp: 0,
+          engaged: 0,
+          lines: [],
+        };
+      }
+      acc[key].ae += line.ae;
+      acc[key].cp += line.cp;
+      acc[key].engaged += line.engaged;
+      acc[key].lines.push(line);
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
+
+  return Object.values(grouped).map((prog: any) => ({
+    ...prog,
+    executionRate: prog.ae > 0 ? (prog.engaged / prog.ae) * 100 : 0,
+    linesCount: prog.lines.length,
+  }));
 }

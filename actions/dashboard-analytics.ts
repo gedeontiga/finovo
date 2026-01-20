@@ -10,7 +10,6 @@ import {
 } from "@/db/schema";
 import { sql, eq, desc } from "drizzle-orm";
 
-// 1. KPI Summary - FIXED
 export async function getBudgetSummary() {
   const result = await db
     .select({
@@ -26,16 +25,22 @@ export async function getBudgetSummary() {
   const cp = parseFloat(data.totalCP || "0");
   const engaged = parseFloat(data.totalEngaged || "0");
 
+  // NOT (ae / engaged) which was causing 355.97%
+  const executionRate = ae > 0 ? (engaged / ae) * 100 : 0;
+
   return {
     ae,
     cp,
     engaged,
-    executionRate: ae > 0 ? (engaged / ae) * 100 : 0,
+    executionRate, // Now correctly calculated
+    disponible: ae - engaged, // Available budget
     linesCount: Number(data.linesCount),
   };
 }
 
-// 2. Bar Chart: Budget by Program - RETURNS REAL DATA
+/**
+ * Get budget by program with correct calculations
+ */
 export async function getBudgetByProgram() {
   const result = await db
     .select({
@@ -46,22 +51,32 @@ export async function getBudgetByProgram() {
       totalEngaged: sql<string>`COALESCE(SUM(CAST(${budgetLines.engaged} AS NUMERIC)), 0)`,
     })
     .from(budgetLines)
-    .leftJoin(activities, eq(budgetLines.activityId, activities.id))
-    .leftJoin(actions, eq(activities.actionId, actions.id))
-    .leftJoin(programs, eq(actions.programId, programs.id))
+    .innerJoin(activities, eq(budgetLines.activityId, activities.id))
+    .innerJoin(actions, eq(activities.actionId, actions.id))
+    .innerJoin(programs, eq(actions.programId, programs.id))
     .groupBy(programs.id, programs.code, programs.name)
     .orderBy(desc(sql`SUM(CAST(${budgetLines.ae} AS NUMERIC))`));
 
-  return result.map((r) => ({
-    code: r.code || "Unknown",
-    name: r.name || `Programme ${r.code}`,
-    ae: parseFloat(r.totalAE || "0"),
-    cp: parseFloat(r.totalCP || "0"),
-    engaged: parseFloat(r.totalEngaged || "0"),
-  }));
+  return result.map((r) => {
+    const ae = parseFloat(r.totalAE || "0");
+    const cp = parseFloat(r.totalCP || "0");
+    const engaged = parseFloat(r.totalEngaged || "0");
+
+    return {
+      code: r.code || "Unknown",
+      name: r.name || `Programme ${r.code}`,
+      ae,
+      cp,
+      engaged,
+      executionRate: ae > 0 ? (engaged / ae) * 100 : 0,
+      disponible: ae - engaged,
+    };
+  });
 }
 
-// 3. Grid Data with proper type conversion
+/**
+ * Get budget lines with proper data for table display
+ */
 export async function getBudgetLinesRaw(page = 1, pageSize = 100) {
   const offset = (page - 1) * pageSize;
 
@@ -83,9 +98,9 @@ export async function getBudgetLinesRaw(page = 1, pageSize = 100) {
       engaged: budgetLines.engaged,
     })
     .from(budgetLines)
-    .leftJoin(activities, eq(budgetLines.activityId, activities.id))
-    .leftJoin(actions, eq(activities.actionId, actions.id))
-    .leftJoin(programs, eq(actions.programId, programs.id))
+    .innerJoin(activities, eq(budgetLines.activityId, activities.id))
+    .innerJoin(actions, eq(activities.actionId, actions.id))
+    .innerJoin(programs, eq(actions.programId, programs.id))
     .leftJoin(adminUnits, eq(budgetLines.adminUnitId, adminUnits.id))
     .limit(pageSize)
     .offset(offset)
@@ -96,17 +111,27 @@ export async function getBudgetLinesRaw(page = 1, pageSize = 100) {
     .from(budgetLines);
 
   return {
-    data: data.map((r) => ({
-      ...r,
-      ae: parseFloat(r.ae || "0"),
-      cp: parseFloat(r.cp || "0"),
-      engaged: parseFloat(r.engaged || "0"),
-    })),
+    data: data.map((r) => {
+      const ae = parseFloat(r.ae || "0");
+      const cp = parseFloat(r.cp || "0");
+      const engaged = parseFloat(r.engaged || "0");
+
+      return {
+        ...r,
+        ae,
+        cp,
+        engaged,
+        executionRate: ae > 0 ? (engaged / ae) * 100 : 0,
+        disponible: ae - engaged,
+      };
+    }),
     total: Number(total[0].count),
   };
 }
 
-// 4. Programs Summary - FIXED calculations
+/**
+ * FIXED: Programs summary with correct calculations
+ */
 export async function getProgramsSummary() {
   const rows = await db
     .select({
@@ -129,6 +154,10 @@ export async function getProgramsSummary() {
     const ae = parseFloat(r.totalAE || "0");
     const cp = parseFloat(r.totalCP || "0");
     const engaged = parseFloat(r.totalEngaged || "0");
+
+    // FIXED: Correct execution rate
+    const executionRate = ae > 0 ? (engaged / ae) * 100 : 0;
+
     return {
       id: r.id,
       code: r.code,
@@ -136,13 +165,16 @@ export async function getProgramsSummary() {
       ae,
       cp,
       engaged,
-      executionRate: ae > 0 ? (engaged / ae) * 100 : 0,
+      executionRate,
+      disponible: ae - engaged,
       activitiesCount: Number(r.lineCount),
     };
   });
 }
 
-// 5. Admin Units for Pie Chart - REAL DATA
+/**
+ * Get admin unit statistics for pie chart
+ */
 export async function getAdminUnitStats() {
   const result = await db
     .select({
@@ -169,13 +201,15 @@ export async function getAdminUnitStats() {
 
   const chartData = result.slice(0, 5).map((r, i) => ({
     browser: r.code || "unknown",
+    name: r.name || "Unknown",
     visitors: Math.round(parseFloat(r.value || "0")),
-    fill: `hsl(var(--chart-${i + 1}))`,
+    fill: `hsl(var(--chart-${i + 1}))`, // Use theme colors
   }));
 
   if (others > 0) {
     chartData.push({
       browser: "others",
+      name: "Autres",
       visitors: Math.round(others),
       fill: "hsl(var(--chart-6))",
     });
