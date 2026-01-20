@@ -1,14 +1,11 @@
 'use client';
 
 import * as React from 'react';
-import { IconTrendingUp } from '@tabler/icons-react';
 import { Label, Pie, PieChart } from 'recharts';
-
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
@@ -18,60 +15,43 @@ import {
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart';
-import { APP_TEXTS } from '@/lib/constants';
-import { useThemeConfig } from '@/components/active-theme';
 
-const chartData = [
-  { browser: 'chrome', visitors: 275, fill: 'var(--primary)' },
-  { browser: 'safari', visitors: 200, fill: 'var(--primary)' },
-  { browser: 'firefox', visitors: 287, fill: 'var(--primary)' },
-  { browser: 'edge', visitors: 173, fill: 'var(--primary)' },
-  { browser: 'other', visitors: 190, fill: 'var(--primary)' }
-];
+interface PieGraphProps {
+  data: Array<{
+    browser: string;
+    visitors: number;
+    fill: string;
+  }>;
+}
 
-const chartConfig = {
-  visitors: {
-    label: 'Visitors'
-  },
-  chrome: {
-    label: 'Chrome',
-    color: 'var(--primary)'
-  },
-  safari: {
-    label: 'Safari',
-    color: 'var(--primary)'
-  },
-  firefox: {
-    label: 'Firefox',
-    color: 'var(--primary)'
-  },
-  edge: {
-    label: 'Edge',
-    color: 'var(--primary)'
-  },
-  other: {
-    label: 'Other',
-    color: 'var(--primary)'
-  }
-} satisfies ChartConfig;
-
-export function PieGraph() {
-  const { activeTheme } = useThemeConfig();
+export function BudgetPieGraph({ data }: PieGraphProps) {
+  const chartConfig: ChartConfig = {
+    visitors: {
+      label: 'Budget (XAF)'
+    }
+  };
 
   const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
-  }, []);
+    return data.reduce((acc, curr) => acc + curr.visitors, 0);
+  }, [data]);
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('fr-FR', {
+      notation: 'compact',
+      compactDisplay: 'short',
+      maximumFractionDigits: 1
+    }).format(value);
 
   return (
     <Card className='@container/card'>
       <CardHeader>
-        <CardTitle>{APP_TEXTS.charts.pieGraph.title}</CardTitle>
+        <CardTitle>Budget by Administrative Unit</CardTitle>
         <CardDescription>
           <span className='hidden @[540px]/card:block'>
-            {APP_TEXTS.charts.pieGraph.descriptionLong}
+            Distribution of authorized budget across top units
           </span>
           <span className='@[540px]/card:hidden'>
-            {APP_TEXTS.charts.pieGraph.descriptionShort}
+            Unit distribution
           </span>
         </CardDescription>
       </CardHeader>
@@ -81,45 +61,31 @@ export function PieGraph() {
           className='mx-auto aspect-square h-62.5'
         >
           <PieChart>
-            <defs>
-              {['chrome', 'safari', 'firefox', 'edge', 'other'].map(
-                (browser, index) => (
-                  <linearGradient
-                    key={browser}
-                    id={`fill${browser}`}
-                    x1='0'
-                    y1='0'
-                    x2='0'
-                    y2='1'
-                  >
-                    <stop
-                      offset='0%'
-                      stopColor='var(--primary)'
-                      stopOpacity={1 - index * 0.12}
-                    />
-                    <stop
-                      offset='100%'
-                      stopColor='var(--primary)'
-                      stopOpacity={0.75 - index * 0.12}
-                    />
-                  </linearGradient>
-                )
-              )}
-            </defs>
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              content={
+                <ChartTooltipContent
+                  hideLabel
+                  formatter={(value, name) => (
+                    <>
+                      <div className='text-xs text-muted-foreground'>
+                        {String(name).toUpperCase()}
+                      </div>
+                      <div className='font-bold'>
+                        {formatCurrency(Number(value))} XAF
+                      </div>
+                    </>
+                  )}
+                />
+              }
             />
             <Pie
-              data={chartData.map((item, index) => ({
-                ...item,
-                fill: `url(#fill${item.browser})`
-              }))}
+              data={data}
               dataKey='visitors'
               nameKey='browser'
               innerRadius={60}
               strokeWidth={2}
-              stroke='var(--background)'
+              stroke='hsl(var(--background))'
             >
               <Label
                 content={({ viewBox }) => {
@@ -136,14 +102,14 @@ export function PieGraph() {
                           y={viewBox.cy}
                           className='fill-foreground text-3xl font-bold'
                         >
-                          {totalVisitors.toLocaleString()}
+                          {formatCurrency(totalVisitors)}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
                           className='fill-muted-foreground text-sm'
                         >
-                          Total Visitors
+                          Total XAF
                         </tspan>
                       </text>
                     );
@@ -154,15 +120,6 @@ export function PieGraph() {
           </PieChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className='flex-col gap-2 text-sm'>
-        <div className='flex items-center gap-2 leading-none font-medium'>
-          {APP_TEXTS.charts.pieGraph.footer.trend}{' '}
-          <IconTrendingUp className='h-4 w-4' />
-        </div>
-        <div className='text-muted-foreground leading-none'>
-          {APP_TEXTS.charts.pieGraph.footer.period}
-        </div>
-      </CardFooter>
     </Card>
   );
 }

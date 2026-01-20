@@ -3,5 +3,5 @@ import { BarGraph } from "@/views/dashboard/overview/components/bar-graph";
 
 export default async function BarStatsPage() {
   const data = await getBudgetByProgram();
-  return <BarGraph />;
+  return <BarGraph data={data} />;
 }

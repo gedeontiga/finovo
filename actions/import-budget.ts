@@ -17,16 +17,16 @@ export async function uploadBudgetFile(formData: FormData) {
 
   const buffer = await file.arrayBuffer();
 
-  // 1. Parse Excel (CPU Bound)
-  // This returns a flat array of every row in the excel file
+  // Parse Excel
   const rawData = await parseBudgetExcel(buffer);
 
   if (rawData.length === 0) {
     return { success: false, message: "No valid data found in file." };
   }
 
+  console.log(`Processing ${rawData.length} budget lines...`);
+
   // --- Step A: Sync Programs ---
-  // Get unique programs from file
   const uniquePrograms = Array.from(
     new Map(rawData.map((r) => [r.programCode, r])).values(),
   );
@@ -37,18 +37,16 @@ export async function uploadBudgetFile(formData: FormData) {
       .values(
         uniquePrograms.map((p) => ({
           code: p.programCode,
-          name: `Programme ${p.programCode}`, // Default name if not extracted, or enhance parser to get name
+          name: p.programName,
         })),
       )
       .onConflictDoNothing();
   }
 
-  // Fetch all programs to get IDs
   const allPrograms = await db.select().from(programs);
   const programMap = new Map(allPrograms.map((p) => [p.code, p.id]));
 
   // --- Step B: Sync Actions ---
-  // We need to link Actions to Program IDs
   const uniqueActions = Array.from(
     new Map(
       rawData.map((r) => [`${r.programCode}-${r.actionCode}`, r]),
@@ -60,15 +58,13 @@ export async function uploadBudgetFile(formData: FormData) {
     .map((r) => ({
       programId: programMap.get(r.programCode)!,
       code: r.actionCode,
-      name: `Action ${r.actionCode}`, // Default name
+      name: r.actionName,
     }));
 
   if (actionsToInsert.length > 0) {
     await db.insert(actions).values(actionsToInsert).onConflictDoNothing();
   }
 
-  // Fetch all relevant actions to get IDs
-  // We construct a composite key map: "ProgramID-ActionCode" -> ActionID
   const allActions = await db.select().from(actions);
   const actionMap = new Map(
     allActions.map((a) => [`${a.programId}-${a.code}`, a.id]),
@@ -96,7 +92,7 @@ export async function uploadBudgetFile(formData: FormData) {
     activitiesToInsert.push({
       actionId: aId,
       code: row.activityCode,
-      name: row.activityName || "Unknown Activity",
+      name: row.activityName,
     });
   }
 
@@ -107,7 +103,6 @@ export async function uploadBudgetFile(formData: FormData) {
       .onConflictDoNothing();
   }
 
-  // Fetch all activities
   const allActivities = await db.select().from(activities);
   const activityMap = new Map(
     allActivities.map((a) => [`${a.actionId}-${a.code}`, a.id]),
@@ -133,22 +128,27 @@ export async function uploadBudgetFile(formData: FormData) {
   const allAdmins = await db.select().from(adminUnits);
   const adminMap = new Map(allAdmins.map((a) => [a.code!, a.id]));
 
-  // =========================================================
-  // FINAL STEP: Bulk Insert Budget Lines
-  // =========================================================
-
+  // --- Step E: Bulk Insert Budget Lines ---
   const linesToInsert: (typeof budgetLines.$inferInsert)[] = [];
 
   for (const row of rawData) {
-    // Resolve Hierarchy IDs
     const pId = programMap.get(row.programCode);
-    if (!pId) continue;
+    if (!pId) {
+      console.warn(`Program not found: ${row.programCode}`);
+      continue;
+    }
 
     const actionId = actionMap.get(`${pId}-${row.actionCode}`);
-    if (!actionId) continue;
+    if (!actionId) {
+      console.warn(`Action not found: ${pId}-${row.actionCode}`);
+      continue;
+    }
 
     const activityId = activityMap.get(`${actionId}-${row.activityCode}`);
-    if (!activityId) continue; // Skip if hierarchy is broken
+    if (!activityId) {
+      console.warn(`Activity not found: ${actionId}-${row.activityCode}`);
+      continue;
+    }
 
     const adminId = row.adminUnitCode ? adminMap.get(row.adminUnitCode) : null;
 
@@ -163,12 +163,26 @@ export async function uploadBudgetFile(formData: FormData) {
     });
   }
 
-  // Drizzle allows batch inserting
-  // If the array is massive (>5000), you might want to chunk it, but for standard Excel files, this is fine.
   if (linesToInsert.length > 0) {
-    await db.insert(budgetLines).values(linesToInsert);
+    // Insert in batches to avoid overwhelming the database
+    const batchSize = 1000;
+    for (let i = 0; i < linesToInsert.length; i += batchSize) {
+      const batch = linesToInsert.slice(i, i + batchSize);
+      await db.insert(budgetLines).values(batch);
+      console.log(
+        `Inserted batch ${i / batchSize + 1} (${batch.length} lines)`,
+      );
+    }
   }
 
   revalidatePath("/dashboard");
-  return { success: true, count: linesToInsert.length };
+  revalidatePath("/dashboard/budget");
+  revalidatePath("/dashboard/overview");
+  revalidatePath("/dashboard/programs");
+
+  return {
+    success: true,
+    count: linesToInsert.length,
+    message: `Successfully imported ${linesToInsert.length} budget lines`,
+  };
 }
