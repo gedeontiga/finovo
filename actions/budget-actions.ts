@@ -7,6 +7,7 @@ import {
   actions,
   activities,
   adminUnits,
+  fiscalYears,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -46,7 +47,34 @@ export async function createBudgetLineAction(data: {
   engaged: number;
 }) {
   try {
+    // Get the active fiscal year
+    const activeFiscalYear = await db
+      .select()
+      .from(fiscalYears)
+      .where(eq(fiscalYears.isActive, true))
+      .limit(1);
+
+    let fiscalYearId: number;
+
+    if (activeFiscalYear.length > 0) {
+      fiscalYearId = activeFiscalYear[0].id;
+    } else {
+      // Create a new active fiscal year if none exists
+      const currentYear = new Date().getFullYear();
+      const inserted = await db
+        .insert(fiscalYears)
+        .values({
+          year: currentYear,
+          name: `Budget ${currentYear}`,
+          isActive: true,
+        })
+        .returning({ id: fiscalYears.id });
+
+      fiscalYearId = inserted[0].id;
+    }
+
     await db.insert(budgetLines).values({
+      fiscalYearId: fiscalYearId,
       activityId: data.activityId,
       adminUnitId: data.adminUnitId || null,
       paragraphCode: data.paragraphCode,

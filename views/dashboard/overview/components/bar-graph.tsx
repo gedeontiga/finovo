@@ -29,14 +29,15 @@ interface BarGraphProps {
 export function BarGraph({ data }: BarGraphProps) {
   const [activeChart, setActiveChart] = React.useState<'ae' | 'engaged'>('ae');
 
+  // FIXED: Use proper CSS variables for theme colors
   const chartConfig: ChartConfig = {
     ae: {
       label: 'Authorized (AE)',
-      color: 'hsl(var(--chart-1))'
+      color: 'hsl(var(--chart-1))' // Uses theme color
     },
     engaged: {
       label: 'Engaged',
-      color: 'hsl(var(--chart-2))'
+      color: 'hsl(var(--chart-2))' // Uses theme color
     }
   };
 
@@ -81,7 +82,7 @@ export function BarGraph({ data }: BarGraphProps) {
             <button
               key={key}
               data-active={activeChart === key}
-              className='data-[active=true]:bg-muted/50 relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6'
+              className='data-[active=true]:bg-muted/50 relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6 transition-colors hover:bg-muted/30'
               onClick={() => setActiveChart(key)}
             >
               <span className='text-xs text-muted-foreground'>
@@ -108,19 +109,25 @@ export function BarGraph({ data }: BarGraphProps) {
               bottom: 12
             }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="3 3"
+              className="stroke-muted"
+            />
             <XAxis
               dataKey='program'
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `P${value}`}
+              className="text-xs text-muted-foreground"
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => formatCurrency(value)}
+              className="text-xs text-muted-foreground"
             />
             <ChartTooltip
               content={
@@ -136,8 +143,9 @@ export function BarGraph({ data }: BarGraphProps) {
             />
             <Bar
               dataKey={activeChart}
-              fill={chartConfig[activeChart].color}
+              fill={chartConfig[activeChart].color} // Uses the theme color
               radius={[4, 4, 0, 0]}
+              className="transition-opacity hover:opacity-80"
             />
           </BarChart>
         </ChartContainer>

@@ -7,9 +7,11 @@ import {
   activities,
   budgetLines,
   adminUnits,
+  fiscalYears,
 } from "@/db/schema";
 import { parseBudgetExcel } from "@/lib/excel-parser";
 import { revalidatePath } from "next/cache";
+import { eq } from "drizzle-orm";
 
 export async function uploadBudgetFile(formData: FormData) {
   const file = formData.get("file") as File;
@@ -26,7 +28,33 @@ export async function uploadBudgetFile(formData: FormData) {
 
   console.log(`Processing ${rawData.length} budget lines...`);
 
-  // --- Step A: Sync Programs ---
+  // --- Step 0: Get or create fiscal year ---
+  const currentYear = new Date().getFullYear();
+  let activeFiscalYear = await db
+    .select()
+    .from(fiscalYears)
+    .where(eq(fiscalYears.isActive, true))
+    .limit(1);
+
+  let fiscalYearId: number;
+
+  if (activeFiscalYear.length > 0) {
+    fiscalYearId = activeFiscalYear[0].id;
+  } else {
+    // Create a new active fiscal year if none exists
+    const inserted = await db
+      .insert(fiscalYears)
+      .values({
+        year: currentYear,
+        name: `Budget ${currentYear}`,
+        isActive: true,
+      })
+      .returning({ id: fiscalYears.id });
+
+    fiscalYearId = inserted[0].id;
+  }
+
+  console.log(`Using fiscal year ID: ${fiscalYearId}`);
   const uniquePrograms = Array.from(
     new Map(rawData.map((r) => [r.programCode, r])).values(),
   );
@@ -153,6 +181,7 @@ export async function uploadBudgetFile(formData: FormData) {
     const adminId = row.adminUnitCode ? adminMap.get(row.adminUnitCode) : null;
 
     linesToInsert.push({
+      fiscalYearId: fiscalYearId,
       activityId: activityId,
       adminUnitId: adminId || null,
       paragraphCode: row.paragraphCode,

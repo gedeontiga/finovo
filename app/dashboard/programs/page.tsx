@@ -1,5 +1,7 @@
 import PageContainer from "@/components/layout/page-container";
-import { getProgramsSummary } from "@/actions/dashboard-analytics";
+import { db } from "@/db";
+import { programs, actions, activities, budgetLines } from "@/db/schema";
+import { eq, sql } from "drizzle-orm";
 import { BudgetTable } from "../budget/budget-table";
 import { columns } from "./columns";
 import { CreateProgramForm } from "@/views/dashboard/programs/create-program-form";
@@ -7,9 +9,44 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 export default async function ProgramsPage() {
-	const data = await getProgramsSummary();
+	// Fetch all programs with aggregated data
+	const rows = await db
+		.select({
+			id: programs.id,
+			code: programs.code,
+			name: programs.name,
+			totalAE: sql<string>`COALESCE(SUM(CAST(${budgetLines.ae} AS NUMERIC)), 0)`,
+			totalCP: sql<string>`COALESCE(SUM(CAST(${budgetLines.cp} AS NUMERIC)), 0)`,
+			totalEngaged: sql<string>`COALESCE(SUM(CAST(${budgetLines.engaged} AS NUMERIC)), 0)`,
+			lineCount: sql<number>`count(${budgetLines.id})`,
+		})
+		.from(programs)
+		.leftJoin(actions, eq(actions.programId, programs.id))
+		.leftJoin(activities, eq(activities.actionId, actions.id))
+		.leftJoin(budgetLines, eq(budgetLines.activityId, activities.id))
+		.groupBy(programs.id, programs.code, programs.name)
+		.orderBy(programs.code);
 
-	// Calculate Global Total for the Header
+	const data = rows.map((r) => {
+		const ae = parseFloat(r.totalAE || "0");
+		const cp = parseFloat(r.totalCP || "0");
+		const engaged = parseFloat(r.totalEngaged || "0");
+		const executionRate = ae > 0 ? (engaged / ae) * 100 : 0;
+
+		return {
+			id: r.id,
+			code: r.code,
+			name: r.name,
+			ae,
+			cp,
+			engaged,
+			executionRate,
+			disponible: ae - engaged,
+			activitiesCount: Number(r.lineCount),
+		};
+	});
+
+	// Calculate Global Totals
 	const globalAE = data.reduce((acc, curr) => acc + curr.ae, 0);
 	const globalEngaged = data.reduce((acc, curr) => acc + curr.engaged, 0);
 	const globalRate = globalAE > 0 ? (globalEngaged / globalAE) * 100 : 0;

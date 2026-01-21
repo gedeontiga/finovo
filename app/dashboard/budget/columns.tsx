@@ -52,7 +52,6 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 	const [cp, setCp] = useState(row.cp);
 	const [engaged, setEngaged] = useState(row.engaged);
 
-	// Auto-calculate execution rate
 	const executionRate = ae > 0 ? (engaged / ae) * 100 : 0;
 	const disponible = ae - engaged;
 
@@ -61,7 +60,7 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 		const result = await updateBudgetLineAction(row.id, {
 			ae: Number(ae),
 			cp: Number(cp),
-			engaged: Number(engaged)
+			engaged: Number(engaged),
 		});
 		setLoading(false);
 
@@ -88,20 +87,28 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 				<div className="grid gap-4 py-4">
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label className="text-right font-semibold">Program</Label>
-						<span className="col-span-3 text-sm">{row.program} - {row.programName}</span>
+						<span className="col-span-3 text-sm">
+							{row.program} - {row.programName}
+						</span>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label className="text-right font-semibold">Activity</Label>
-						<span className="col-span-3 text-sm">{row.activity} - {row.activityName}</span>
+						<span className="col-span-3 text-sm">
+							{row.activity} - {row.activityName}
+						</span>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label className="text-right font-semibold">Paragraph</Label>
-						<span className="col-span-3 text-xs font-mono">{row.paragraph} - {row.paragraphName}</span>
+						<span className="col-span-3 text-xs font-mono">
+							{row.paragraph} - {row.paragraphName}
+						</span>
 					</div>
 
 					<div className="border-t pt-4 space-y-4">
 						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="ae" className="text-right">AE (Authorized)</Label>
+							<Label htmlFor="ae" className="text-right">
+								AE (Authorized)
+							</Label>
 							<Input
 								id="ae"
 								type="number"
@@ -111,7 +118,9 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 							/>
 						</div>
 						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="cp" className="text-right">CP (Credits)</Label>
+							<Label htmlFor="cp" className="text-right">
+								CP (Credits)
+							</Label>
 							<Input
 								id="cp"
 								type="number"
@@ -121,7 +130,9 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 							/>
 						</div>
 						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="engaged" className="text-right">Engaged</Label>
+							<Label htmlFor="engaged" className="text-right">
+								Engaged
+							</Label>
 							<Input
 								id="engaged"
 								type="number"
@@ -135,12 +146,17 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 					<div className="border-t pt-4 space-y-2 bg-muted/50 p-4 rounded-lg">
 						<div className="flex justify-between text-sm">
 							<span className="text-muted-foreground">Execution Rate:</span>
-							<span className={`font-semibold ${executionRate > 95 ? 'text-red-600' : 'text-green-600'}`}>
+							<span
+								className={`font-semibold ${executionRate > 95 ? "text-red-600" : "text-green-600"
+									}`}
+							>
 								{executionRate.toFixed(2)}%
 							</span>
 						</div>
 						<div className="flex justify-between text-sm">
-							<span className="text-muted-foreground">Available (Disponible):</span>
+							<span className="text-muted-foreground">
+								Available (Disponible):
+							</span>
 							<span className="font-mono font-semibold">
 								{formatCurrency(disponible)} XAF
 							</span>
@@ -160,91 +176,160 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 	);
 };
 
+// FIXED: Explicit column definitions with proper accessors and cells
 export const columns: ColumnDef<BudgetLineRow>[] = [
 	{
+		id: "program",
 		accessorKey: "program",
 		header: "Program",
-		cell: ({ row }) => (
-			<div className="space-y-1">
-				<span className="font-mono text-xs font-semibold">{row.getValue("program") || "-"}</span>
-				<p className="text-xs text-muted-foreground truncate max-w-25" title={row.original.programName || ""}>
-					{row.original.programName}
-				</p>
-			</div>
-		),
+		cell: ({ row }) => {
+			const program = row.original.program;
+			const programName = row.original.programName;
+			return (
+				<div className="space-y-1 min-w-32">
+					<span className="font-mono text-xs font-semibold block">
+						{program || "-"}
+					</span>
+					<p
+						className="text-xs text-muted-foreground truncate max-w-32"
+						title={programName || ""}
+					>
+						{programName}
+					</p>
+				</div>
+			);
+		},
+		enableSorting: true,
+		enableColumnFilter: true,
 	},
 	{
+		id: "activity",
 		accessorKey: "activity",
 		header: "Activity",
-		cell: ({ row }) => (
-			<div className="space-y-1">
-				<span className="font-mono text-xs font-semibold">{row.getValue("activity") || "-"}</span>
-				<p className="text-xs text-muted-foreground truncate max-w-37.5" title={row.original.activityName || ""}>
-					{row.original.activityName}
-				</p>
-			</div>
-		),
+		cell: ({ row }) => {
+			const activity = row.original.activity;
+			const activityName = row.original.activityName;
+			return (
+				<div className="space-y-1 min-w-37.5">
+					<span className="font-mono text-xs font-semibold block">
+						{activity || "-"}
+					</span>
+					<p
+						className="text-xs text-muted-foreground truncate max-w-37.5"
+						title={activityName || ""}
+					>
+						{activityName}
+					</p>
+				</div>
+			);
+		},
+		enableSorting: true,
+		enableColumnFilter: true,
 	},
 	{
+		id: "adminCode",
 		accessorKey: "adminCode",
 		header: "Admin Unit",
 		cell: ({ row }) => {
-			const code = row.getValue("adminCode") as string | null;
+			const code = row.original.adminCode;
 			const name = row.original.adminName;
-			if (!code) return <span className="text-xs text-muted-foreground">-</span>;
+			if (!code) {
+				return (
+					<span className="text-xs text-muted-foreground min-w-25 block">-</span>
+				);
+			}
 			return (
-				<div className="space-y-1">
-					<span className="font-mono text-xs font-semibold">{code}</span>
-					<p className="text-xs text-muted-foreground truncate max-w-25" title={name || ""}>
+				<div className="space-y-1 min-w-25">
+					<span className="font-mono text-xs font-semibold block">{code}</span>
+					<p
+						className="text-xs text-muted-foreground truncate max-w-25"
+						title={name || ""}
+					>
 						{name}
 					</p>
 				</div>
 			);
 		},
+		enableSorting: true,
+		enableColumnFilter: true,
 	},
 	{
+		id: "paragraph",
 		accessorKey: "paragraph",
 		header: "Paragraph",
-		cell: ({ row }) => (
-			<div className="space-y-1">
-				<span className="font-mono text-xs font-bold text-primary">{row.getValue("paragraph")}</span>
-				<p className="text-xs text-muted-foreground truncate max-w-50" title={row.original.paragraphName}>
-					{row.original.paragraphName}
-				</p>
-			</div>
-		),
-	},
-	{
-		accessorKey: "ae",
-		header: () => <div className="text-right text-xs">AE (Authorized)</div>,
-		cell: ({ row }) => (
-			<div className="text-right font-mono text-xs text-blue-600 font-semibold">
-				{formatCurrency(row.getValue("ae"))}
-			</div>
-		),
-	},
-	{
-		accessorKey: "cp",
-		header: () => <div className="text-right text-xs">CP (Credits)</div>,
-		cell: ({ row }) => (
-			<div className="text-right font-mono text-xs text-purple-600">
-				{formatCurrency(row.getValue("cp"))}
-			</div>
-		),
-	},
-	{
-		accessorKey: "engaged",
-		header: () => <div className="text-right text-xs">Engaged</div>,
 		cell: ({ row }) => {
-			const val = row.getValue("engaged") as number;
+			const paragraph = row.original.paragraph;
+			const paragraphName = row.original.paragraphName;
+			return (
+				<div className="space-y-1 min-w-50">
+					<span className="font-mono text-xs font-bold text-primary block">
+						{paragraph}
+					</span>
+					<p
+						className="text-xs text-muted-foreground truncate max-w-50"
+						title={paragraphName}
+					>
+						{paragraphName}
+					</p>
+				</div>
+			);
+		},
+		enableSorting: true,
+		enableColumnFilter: true,
+	},
+	{
+		id: "ae",
+		accessorKey: "ae",
+		header: () => (
+			<div className="text-right text-xs font-semibold">AE (Authorized)</div>
+		),
+		cell: ({ row }) => {
+			const value = row.original.ae;
+			return (
+				<div className="text-right font-mono text-xs text-blue-600 font-semibold min-w-25">
+					{formatCurrency(value)}
+				</div>
+			);
+		},
+		enableSorting: true,
+	},
+	{
+		id: "cp",
+		accessorKey: "cp",
+		header: () => (
+			<div className="text-right text-xs font-semibold">CP (Credits)</div>
+		),
+		cell: ({ row }) => {
+			const value = row.original.cp;
+			return (
+				<div className="text-right font-mono text-xs text-purple-600 min-w-25">
+					{formatCurrency(value)}
+				</div>
+			);
+		},
+		enableSorting: true,
+	},
+	{
+		id: "engaged",
+		accessorKey: "engaged",
+		header: () => (
+			<div className="text-right text-xs font-semibold">Engaged</div>
+		),
+		cell: ({ row }) => {
+			const val = row.original.engaged;
 			const ae = row.original.ae;
 			const ratio = ae > 0 ? (val / ae) * 100 : 0;
 			const disponible = ae - val;
 
 			return (
-				<div className="flex flex-col items-end space-y-1">
-					<span className="font-mono text-xs font-semibold">{formatCurrency(val)}</span>
-					<Badge variant={ratio > 95 ? "destructive" : "secondary"} className="text-[10px] px-1.5 py-0">
+				<div className="flex flex-col items-end space-y-1 min-w-30">
+					<span className="font-mono text-xs font-semibold">
+						{formatCurrency(val)}
+					</span>
+					<Badge
+						variant={ratio > 95 ? "destructive" : "secondary"}
+						className="text-[10px] px-1.5 py-0"
+					>
 						{ratio.toFixed(1)}%
 					</Badge>
 					<span className="text-[10px] text-muted-foreground">
@@ -253,10 +338,27 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 				</div>
 			);
 		},
+		enableSorting: true,
 	},
 	{
 		id: "actions",
-		header: "Actions",
-		cell: ({ row }) => <EditCell row={row.original} />
-	}
+		header: () => <div className="text-center">Actions</div>,
+		cell: ({ row }) => (
+			<div className="flex justify-center">
+				<EditCell row={row.original} />
+			</div>
+		),
+		enableSorting: false,
+	},
 ];
+
+/**
+ * USAGE NOTE:
+ * 
+ * This fixed version ensures that:
+ * 1. All columns have unique IDs
+ * 2. accessorKey matches the actual data property names
+ * 3. Cell renderers properly access row.original instead of row.getValue()
+ * 4. Minimum widths are set to prevent layout collapse
+ * 5. Headers are properly formatted
+ */

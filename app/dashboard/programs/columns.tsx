@@ -11,12 +11,14 @@ import {
 	DialogTitle,
 	DialogTrigger,
 	DialogFooter,
-	DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
-import { updateProgramAction, deleteProgramAction } from "@/actions/budget-actions";
+import {
+	updateProgramAction,
+	deleteProgramAction,
+} from "@/actions/budget-actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -32,7 +34,10 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const formatCurrency = (value: number) =>
-	new Intl.NumberFormat("fr-FR", { style: "decimal", maximumFractionDigits: 0 }).format(value);
+	new Intl.NumberFormat("fr-FR", {
+		style: "decimal",
+		maximumFractionDigits: 0,
+	}).format(value);
 
 export type ProgramRow = {
 	id: number;
@@ -80,7 +85,9 @@ const EditProgramCell = ({ row }: { row: ProgramRow }) => {
 				</DialogHeader>
 				<div className="grid gap-4 py-4">
 					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="code" className="text-right">Code</Label>
+						<Label htmlFor="code" className="text-right">
+							Code
+						</Label>
 						<Input
 							id="code"
 							value={code}
@@ -89,7 +96,9 @@ const EditProgramCell = ({ row }: { row: ProgramRow }) => {
 						/>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
-						<Label htmlFor="name" className="text-right">Name</Label>
+						<Label htmlFor="name" className="text-right">
+							Name
+						</Label>
 						<Input
 							id="name"
 							value={name}
@@ -128,7 +137,11 @@ const DeleteProgramCell = ({ row }: { row: ProgramRow }) => {
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
-				<Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-destructive"
+				>
 					<IconTrash className="h-4 w-4" />
 				</Button>
 			</AlertDialogTrigger>
@@ -137,7 +150,8 @@ const DeleteProgramCell = ({ row }: { row: ProgramRow }) => {
 					<AlertDialogTitle>Delete Program</AlertDialogTitle>
 					<AlertDialogDescription>
 						Are you sure you want to delete program {row.code} - {row.name}?
-						This action cannot be undone and will fail if there are associated budget lines.
+						This action cannot be undone and will fail if there are associated
+						budget lines.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
@@ -153,52 +167,106 @@ const DeleteProgramCell = ({ row }: { row: ProgramRow }) => {
 
 export const columns: ColumnDef<ProgramRow>[] = [
 	{
+		id: "code",
 		accessorKey: "code",
 		header: "Code",
-		cell: ({ row }) => <span className="font-bold">{row.getValue("code")}</span>,
+		cell: ({ row }) => {
+			const code = row.original.code;
+			return (
+				<span className="font-bold font-mono text-primary min-w-15 block">
+					{code}
+				</span>
+			);
+		},
+		enableSorting: true,
+		enableColumnFilter: true,
 	},
 	{
+		id: "name",
 		accessorKey: "name",
 		header: "Program Name",
+		cell: ({ row }) => {
+			const name = row.original.name;
+			return (
+				<span className="text-sm min-w-50 block" title={name}>
+					{name}
+				</span>
+			);
+		},
+		enableSorting: true,
+		enableColumnFilter: true,
 	},
 	{
+		id: "activitiesCount",
 		accessorKey: "activitiesCount",
 		header: "Budget Lines",
-		cell: ({ row }) => <span className="text-muted-foreground">{row.getValue("activitiesCount")}</span>,
-	},
-	{
-		accessorKey: "ae",
-		header: () => <div className="text-right">Auth (AE)</div>,
-		cell: ({ row }) => <div className="text-right font-mono">{formatCurrency(row.getValue("ae"))}</div>,
-	},
-	{
-		accessorKey: "engaged",
-		header: () => <div className="text-right">Engaged</div>,
-		cell: ({ row }) => <div className="text-right font-mono">{formatCurrency(row.getValue("engaged"))}</div>,
-	},
-	{
-		accessorKey: "executionRate",
-		header: "Execution",
 		cell: ({ row }) => {
-			const rate = row.getValue("executionRate") as number;
+			const count = row.original.activitiesCount;
 			return (
-				<div className="w-25">
-					<div className="flex justify-between text-xs mb-1">
-						<span>{rate.toFixed(1)}%</span>
-					</div>
-					<Progress value={rate} className={`h-2 ${rate > 90 ? "bg-red-100" : ""}`} />
+				<span className="text-muted-foreground text-sm min-w-15 block text-center">
+					{count}
+				</span>
+			);
+		},
+		enableSorting: true,
+	},
+	{
+		id: "ae",
+		accessorKey: "ae",
+		header: () => <div className="text-right font-semibold">Auth (AE)</div>,
+		cell: ({ row }) => {
+			const value = row.original.ae;
+			return (
+				<div className="text-right font-mono text-sm min-w-30">
+					{formatCurrency(value)}
 				</div>
 			);
 		},
+		enableSorting: true,
+	},
+	{
+		id: "engaged",
+		accessorKey: "engaged",
+		header: () => <div className="text-right font-semibold">Engaged</div>,
+		cell: ({ row }) => {
+			const value = row.original.engaged;
+			return (
+				<div className="text-right font-mono text-sm min-w-30">
+					{formatCurrency(value)}
+				</div>
+			);
+		},
+		enableSorting: true,
+	},
+	{
+		id: "executionRate",
+		accessorKey: "executionRate",
+		header: "Execution",
+		cell: ({ row }) => {
+			const rate = row.original.executionRate;
+			return (
+				<div className="min-w-32">
+					<div className="flex justify-between text-xs mb-1">
+						<span className="font-semibold">{rate.toFixed(1)}%</span>
+					</div>
+					<Progress
+						value={rate}
+						className={`h-2 ${rate > 90 ? "bg-red-100 dark:bg-red-950" : ""}`}
+					/>
+				</div>
+			);
+		},
+		enableSorting: true,
 	},
 	{
 		id: "actions",
-		header: "Actions",
+		header: () => <div className="text-center">Actions</div>,
 		cell: ({ row }) => (
-			<div className="flex gap-1">
+			<div className="flex gap-1 justify-center">
 				<EditProgramCell row={row.original} />
 				<DeleteProgramCell row={row.original} />
 			</div>
 		),
+		enableSorting: false,
 	},
 ];
