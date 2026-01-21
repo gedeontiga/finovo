@@ -38,7 +38,7 @@ export async function updateBudgetLineAction(
 }
 
 export async function createBudgetLineAction(data: {
-  activityId: number;
+  taskId: number; // CHANGED: activityId -> taskId
   adminUnitId?: number;
   paragraphCode: string;
   paragraphName: string;
@@ -47,7 +47,6 @@ export async function createBudgetLineAction(data: {
   engaged: number;
 }) {
   try {
-    // Get the active fiscal year
     const activeFiscalYear = await db
       .select()
       .from(fiscalYears)
@@ -59,7 +58,6 @@ export async function createBudgetLineAction(data: {
     if (activeFiscalYear.length > 0) {
       fiscalYearId = activeFiscalYear[0].id;
     } else {
-      // Create a new active fiscal year if none exists
       const currentYear = new Date().getFullYear();
       const inserted = await db
         .insert(fiscalYears)
@@ -75,7 +73,7 @@ export async function createBudgetLineAction(data: {
 
     await db.insert(budgetLines).values({
       fiscalYearId: fiscalYearId,
-      activityId: data.activityId,
+      taskId: data.taskId, // CHANGED: activityId -> taskId
       adminUnitId: data.adminUnitId || null,
       paragraphCode: data.paragraphCode,
       paragraphName: data.paragraphName,

@@ -154,9 +154,7 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 							</span>
 						</div>
 						<div className="flex justify-between text-sm">
-							<span className="text-muted-foreground">
-								Available (Disponible):
-							</span>
+							<span className="text-muted-foreground">Available (Disponible):</span>
 							<span className="font-mono font-semibold">
 								{formatCurrency(disponible)} XAF
 							</span>
@@ -176,11 +174,11 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 	);
 };
 
-// FIXED: Explicit column definitions with proper accessors and cells
+// FIXED: Proper column definitions with accessorFn for proper data access
 export const columns: ColumnDef<BudgetLineRow>[] = [
 	{
 		id: "program",
-		accessorKey: "program",
+		accessorFn: (row) => row.program,
 		header: "Program",
 		cell: ({ row }) => {
 			const program = row.original.program;
@@ -201,10 +199,16 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
+		enableHiding: true,
+		meta: {
+			label: "Program",
+			variant: "text",
+			placeholder: "Filter by program...",
+		},
 	},
 	{
 		id: "activity",
-		accessorKey: "activity",
+		accessorFn: (row) => row.activity,
 		header: "Activity",
 		cell: ({ row }) => {
 			const activity = row.original.activity;
@@ -225,10 +229,16 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
+		enableHiding: true,
+		meta: {
+			label: "Activity",
+			variant: "text",
+			placeholder: "Filter by activity...",
+		},
 	},
 	{
 		id: "adminCode",
-		accessorKey: "adminCode",
+		accessorFn: (row) => row.adminCode,
 		header: "Admin Unit",
 		cell: ({ row }) => {
 			const code = row.original.adminCode;
@@ -252,10 +262,16 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
+		enableHiding: true,
+		meta: {
+			label: "Admin Unit",
+			variant: "text",
+			placeholder: "Filter by admin unit...",
+		},
 	},
 	{
 		id: "paragraph",
-		accessorKey: "paragraph",
+		accessorFn: (row) => row.paragraph,
 		header: "Paragraph",
 		cell: ({ row }) => {
 			const paragraph = row.original.paragraph;
@@ -276,45 +292,59 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
+		enableHiding: true,
+		meta: {
+			label: "Paragraph",
+			variant: "text",
+			placeholder: "Filter by paragraph...",
+		},
 	},
 	{
 		id: "ae",
-		accessorKey: "ae",
-		header: () => (
-			<div className="text-right text-xs font-semibold">AE (Authorized)</div>
-		),
+		accessorFn: (row) => row.ae,
+		header: "AE",
 		cell: ({ row }) => {
 			const value = row.original.ae;
 			return (
-				<div className="text-right font-mono text-xs text-blue-600 font-semibold min-w-25">
+				<div className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold min-w-25">
 					{formatCurrency(value)}
 				</div>
 			);
 		},
 		enableSorting: true,
+		enableColumnFilter: true,
+		enableHiding: true,
+		meta: {
+			label: "AE (Authorized)",
+			variant: "number",
+			placeholder: "Filter by AE...",
+		},
 	},
 	{
 		id: "cp",
-		accessorKey: "cp",
-		header: () => (
-			<div className="text-right text-xs font-semibold">CP (Credits)</div>
-		),
+		accessorFn: (row) => row.cp,
+		header: "CP",
 		cell: ({ row }) => {
 			const value = row.original.cp;
 			return (
-				<div className="text-right font-mono text-xs text-purple-600 min-w-25">
+				<div className="text-right font-mono text-xs text-purple-600 dark:text-purple-400 min-w-25">
 					{formatCurrency(value)}
 				</div>
 			);
 		},
 		enableSorting: true,
+		enableColumnFilter: true,
+		enableHiding: true,
+		meta: {
+			label: "CP (Credits)",
+			variant: "number",
+			placeholder: "Filter by CP...",
+		},
 	},
 	{
 		id: "engaged",
-		accessorKey: "engaged",
-		header: () => (
-			<div className="text-right text-xs font-semibold">Engaged</div>
-		),
+		accessorFn: (row) => row.engaged,
+		header: "Engaged",
 		cell: ({ row }) => {
 			const val = row.original.engaged;
 			const ae = row.original.ae;
@@ -339,6 +369,13 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			);
 		},
 		enableSorting: true,
+		enableColumnFilter: true,
+		enableHiding: true,
+		meta: {
+			label: "Engaged",
+			variant: "number",
+			placeholder: "Filter by engaged...",
+		},
 	},
 	{
 		id: "actions",
@@ -349,16 +386,6 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			</div>
 		),
 		enableSorting: false,
+		enableHiding: false,
 	},
 ];
-
-/**
- * USAGE NOTE:
- * 
- * This fixed version ensures that:
- * 1. All columns have unique IDs
- * 2. accessorKey matches the actual data property names
- * 3. Cell renderers properly access row.original instead of row.getValue()
- * 4. Minimum widths are set to prevent layout collapse
- * 5. Headers are properly formatted
- */

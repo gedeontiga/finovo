@@ -3,9 +3,6 @@
 import type { Column, Table } from '@tanstack/react-table';
 import * as React from 'react';
 
-import { DataTableDateFilter } from '@/components/ui/table/data-table-date-filter';
-import { DataTableFacetedFilter } from '@/components/ui/table/data-table-faceted-filter';
-import { DataTableSliderFilter } from '@/components/ui/table/data-table-slider-filter';
 import { DataTableViewOptions } from '@/components/ui/table/data-table-view-options';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,12 +22,17 @@ export function DataTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0;
 
   const columns = React.useMemo(
-    () => table.getAllColumns().filter((column) => column.getCanFilter()),
+    () => table.getAllColumns().filter((column) => {
+      const meta = column.columnDef.meta as any;
+      return column.columnDef.enableColumnFilter && meta?.variant;
+    }),
     [table]
   );
 
   const onReset = React.useCallback(() => {
     table.resetColumnFilters();
+    table.resetSorting();
+    table.resetPageIndex();
   }, [table]);
 
   return (
@@ -38,24 +40,24 @@ export function DataTableToolbar<TData>({
       role='toolbar'
       aria-orientation='horizontal'
       className={cn(
-        'flex w-full items-start justify-between gap-2 p-1',
+        'flex w-full items-center justify-between gap-4 p-4 bg-muted/50 rounded-lg border',
         className
       )}
       {...props}
     >
-      <div className='flex flex-1 flex-wrap items-center gap-2'>
+      <div className='flex flex-1 flex-wrap items-center gap-3'>
         {columns.map((column) => (
-          <DataTableToolbarFilter key={column.id} column={column} />
+          <DataTableToolbarFilter key={column.id} column={column} table={table} />
         ))}
         {isFiltered && (
           <Button
             aria-label='Reset filters'
             variant='outline'
             size='sm'
-            className='border-dashed'
+            className='h-8'
             onClick={onReset}
           >
-            <Cross2Icon />
+            <Cross2Icon className='mr-2' />
             Reset
           </Button>
         )}
@@ -67,83 +69,40 @@ export function DataTableToolbar<TData>({
     </div>
   );
 }
+
 interface DataTableToolbarFilterProps<TData> {
   column: Column<TData>;
+  table: Table<TData>;
 }
 
 function DataTableToolbarFilter<TData>({
-  column
+  column,
+  table
 }: DataTableToolbarFilterProps<TData>) {
-  {
-    const columnMeta = column.columnDef.meta;
+  const columnMeta = column.columnDef.meta as any;
 
-    const onFilterRender = React.useCallback(() => {
-      if (!columnMeta?.variant) return null;
+  if (!columnMeta?.variant) return null;
 
-      switch (columnMeta.variant) {
-        case 'text':
-          return (
-            <Input
-              placeholder={columnMeta.placeholder ?? columnMeta.label}
-              value={(column.getFilterValue() as string) ?? ''}
-              onChange={(event) => column.setFilterValue(event.target.value)}
-              className='h-8 w-40 lg:w-56'
-            />
-          );
+  const currentValue = (column.getFilterValue() as string) ?? '';
 
-        case 'number':
-          return (
-            <div className='relative'>
-              <Input
-                type='number'
-                inputMode='numeric'
-                placeholder={columnMeta.placeholder ?? columnMeta.label}
-                value={(column.getFilterValue() as string) ?? ''}
-                onChange={(event) => column.setFilterValue(event.target.value)}
-                className={cn('h-8 w-30', columnMeta.unit && 'pr-8')}
-              />
-              {columnMeta.unit && (
-                <span className='bg-accent text-muted-foreground absolute top-0 right-0 bottom-0 flex items-center rounded-r-md px-2 text-sm'>
-                  {columnMeta.unit}
-                </span>
-              )}
-            </div>
-          );
+  const handleChange = (value: string) => {
+    column.setFilterValue(value || undefined);
+    // Reset page to 1 when filtering
+    table.setPageIndex(0);
+  };
 
-        case 'range':
-          return (
-            <DataTableSliderFilter
-              column={column}
-              title={columnMeta.label ?? column.id}
-            />
-          );
-
-        case 'date':
-        case 'dateRange':
-          return (
-            <DataTableDateFilter
-              column={column}
-              title={columnMeta.label ?? column.id}
-              multiple={columnMeta.variant === 'dateRange'}
-            />
-          );
-
-        case 'select':
-        case 'multiSelect':
-          return (
-            <DataTableFacetedFilter
-              column={column}
-              title={columnMeta.label ?? column.id}
-              options={columnMeta.options ?? []}
-              multiple={columnMeta.variant === 'multiSelect'}
-            />
-          );
-
-        default:
-          return null;
-      }
-    }, [column, columnMeta]);
-
-    return onFilterRender();
-  }
+  return (
+    <div className='flex items-center gap-2'>
+      <label className='text-xs font-medium text-muted-foreground whitespace-nowrap'>
+        {columnMeta.label}:
+      </label>
+      <Input
+        type={columnMeta.variant === 'number' ? 'number' : 'text'}
+        placeholder={columnMeta.placeholder || 'Filter...'}
+        value={currentValue}
+        onChange={(e) => handleChange(e.target.value)}
+        className='h-8 w-40'
+      />
+    </div>
+  );
 }

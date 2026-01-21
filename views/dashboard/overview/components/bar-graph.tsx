@@ -29,15 +29,14 @@ interface BarGraphProps {
 export function BarGraph({ data }: BarGraphProps) {
   const [activeChart, setActiveChart] = React.useState<'ae' | 'engaged'>('ae');
 
-  // FIXED: Use proper CSS variables for theme colors
   const chartConfig: ChartConfig = {
     ae: {
       label: 'Authorized (AE)',
-      color: 'hsl(var(--chart-1))' // Uses theme color
+      color: 'var(--primary)'
     },
     engaged: {
       label: 'Engaged',
-      color: 'hsl(var(--chart-2))' // Uses theme color
+      color: 'var(--primary)'
     }
   };
 
@@ -64,11 +63,11 @@ export function BarGraph({ data }: BarGraphProps) {
     }).format(value);
 
   return (
-    <Card className='@container/card'>
+    <Card className='@container/card shadow-md border-border/50'>
       <CardHeader className='flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row'>
         <div className='flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6'>
-          <CardTitle>Budget by Program</CardTitle>
-          <CardDescription>
+          <CardTitle className='text-lg'>Budget by Program</CardTitle>
+          <CardDescription className='text-xs'>
             <span className='hidden @[540px]/card:block'>
               Showing authorized vs engaged amounts by program
             </span>
@@ -82,13 +81,13 @@ export function BarGraph({ data }: BarGraphProps) {
             <button
               key={key}
               data-active={activeChart === key}
-              className='data-[active=true]:bg-muted/50 relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6 transition-colors hover:bg-muted/30'
+              className='data-[active=true]:bg-muted/50 relative flex flex-1 flex-col justify-center gap-1.5 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6 transition-all hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm'
               onClick={() => setActiveChart(key)}
             >
-              <span className='text-xs text-muted-foreground'>
+              <span className='text-xs text-muted-foreground font-medium'>
                 {chartConfig[key].label}
               </span>
-              <span className='text-lg font-bold leading-none sm:text-3xl'>
+              <span className='text-lg font-bold leading-none sm:text-3xl tabular-nums'>
                 {formatCurrency(total[key])} XAF
               </span>
             </button>
@@ -98,7 +97,7 @@ export function BarGraph({ data }: BarGraphProps) {
       <CardContent className='px-2 pt-4 sm:px-6 sm:pt-6'>
         <ChartContainer
           config={chartConfig}
-          className='aspect-auto h-62.5 w-full'
+          className='aspect-auto h-70 w-full'
         >
           <BarChart
             data={chartData}
@@ -109,10 +108,24 @@ export function BarGraph({ data }: BarGraphProps) {
               bottom: 12
             }}
           >
+            <defs>
+              <linearGradient id='fillBar' x1='0' y1='0' x2='0' y2='1'>
+                <stop
+                  offset='0%'
+                  stopColor='var(--primary)'
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset='100%'
+                  stopColor='var(--primary)'
+                  stopOpacity={0.2}
+                />
+              </linearGradient>
+            </defs>
             <CartesianGrid
               vertical={false}
               strokeDasharray="3 3"
-              className="stroke-muted"
+              className="stroke-border/50"
             />
             <XAxis
               dataKey='program'
@@ -120,19 +133,17 @@ export function BarGraph({ data }: BarGraphProps) {
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `P${value}`}
-              className="text-xs text-muted-foreground"
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => formatCurrency(value)}
-              className="text-xs text-muted-foreground"
             />
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className='w-50'
+                  className='w-52 border-border/50 shadow-lg'
                   labelFormatter={(value, payload) => {
                     const item = payload?.[0]?.payload;
                     return item ? `Program ${value}: ${item.name}` : value;
@@ -143,9 +154,10 @@ export function BarGraph({ data }: BarGraphProps) {
             />
             <Bar
               dataKey={activeChart}
-              fill={chartConfig[activeChart].color} // Uses the theme color
-              radius={[4, 4, 0, 0]}
-              className="transition-opacity hover:opacity-80"
+              fill='url(#fillBar)'
+              radius={[6, 6, 0, 0]}
+              className="transition-all hover:opacity-80 cursor-pointer"
+              animationDuration={500}
             />
           </BarChart>
         </ChartContainer>

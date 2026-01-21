@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react';
-import { uploadBudgetFile } from '@/actions/import-budget';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner'; // or your toast library
+import { importBudgetAction } from '@/actions/import-budget';
 
 export function BudgetUploader() {
     const [loading, setLoading] = useState(false);
@@ -16,11 +16,11 @@ export function BudgetUploader() {
         formData.append('file', file);
 
         try {
-            const result = await uploadBudgetFile(formData);
+            const result = await importBudgetAction(formData);
             if (result.success) {
                 toast.success(`Successfully imported ${result.count} budget lines!`);
             } else {
-                toast.error(result.message);
+                toast.error(result.success ? result.error : result.count);
             }
         } catch (error) {
             toast.error("Failed to process file");

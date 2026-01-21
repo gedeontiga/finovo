@@ -5,213 +5,182 @@ import {
   programs,
   actions,
   activities,
-  budgetLines,
+  tasks, // NEW
   adminUnits,
+  budgetLines,
   fiscalYears,
 } from "@/db/schema";
-import { parseBudgetExcel } from "@/lib/excel-parser";
+import { eq, and } from "drizzle-orm";
+import { parseBudgetFile } from "@/lib/excel-parser"; // Fixed Import Name
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
 
-export async function uploadBudgetFile(formData: FormData) {
-  const file = formData.get("file") as File;
-  if (!file) throw new Error("No file uploaded");
+export async function importBudgetAction(formData: FormData) {
+  try {
+    const file = formData.get("file") as File;
+    if (!file) throw new Error("No file provided");
 
-  const buffer = await file.arrayBuffer();
+    const buffer = await file.arrayBuffer();
+    const parsedData = await parseBudgetFile(buffer); // Use corrected function name
 
-  // Parse Excel
-  const rawData = await parseBudgetExcel(buffer);
-
-  if (rawData.length === 0) {
-    return { success: false, message: "No valid data found in file." };
-  }
-
-  console.log(`Processing ${rawData.length} budget lines...`);
-
-  // --- Step 0: Get or create fiscal year ---
-  const currentYear = new Date().getFullYear();
-  let activeFiscalYear = await db
-    .select()
-    .from(fiscalYears)
-    .where(eq(fiscalYears.isActive, true))
-    .limit(1);
-
-  let fiscalYearId: number;
-
-  if (activeFiscalYear.length > 0) {
-    fiscalYearId = activeFiscalYear[0].id;
-  } else {
-    // Create a new active fiscal year if none exists
-    const inserted = await db
-      .insert(fiscalYears)
-      .values({
-        year: currentYear,
-        name: `Budget ${currentYear}`,
-        isActive: true,
-      })
-      .returning({ id: fiscalYears.id });
-
-    fiscalYearId = inserted[0].id;
-  }
-
-  console.log(`Using fiscal year ID: ${fiscalYearId}`);
-  const uniquePrograms = Array.from(
-    new Map(rawData.map((r) => [r.programCode, r])).values(),
-  );
-
-  if (uniquePrograms.length > 0) {
-    await db
-      .insert(programs)
-      .values(
-        uniquePrograms.map((p) => ({
-          code: p.programCode,
-          name: p.programName,
-        })),
-      )
-      .onConflictDoNothing();
-  }
-
-  const allPrograms = await db.select().from(programs);
-  const programMap = new Map(allPrograms.map((p) => [p.code, p.id]));
-
-  // --- Step B: Sync Actions ---
-  const uniqueActions = Array.from(
-    new Map(
-      rawData.map((r) => [`${r.programCode}-${r.actionCode}`, r]),
-    ).values(),
-  );
-
-  const actionsToInsert = uniqueActions
-    .filter((r) => programMap.has(r.programCode))
-    .map((r) => ({
-      programId: programMap.get(r.programCode)!,
-      code: r.actionCode,
-      name: r.actionName,
-    }));
-
-  if (actionsToInsert.length > 0) {
-    await db.insert(actions).values(actionsToInsert).onConflictDoNothing();
-  }
-
-  const allActions = await db.select().from(actions);
-  const actionMap = new Map(
-    allActions.map((a) => [`${a.programId}-${a.code}`, a.id]),
-  );
-
-  // --- Step C: Sync Activities ---
-  const uniqueActivities = Array.from(
-    new Map(
-      rawData.map((r) => [
-        `${r.programCode}-${r.actionCode}-${r.activityCode}`,
-        r,
-      ]),
-    ).values(),
-  );
-
-  const activitiesToInsert: (typeof activities.$inferInsert)[] = [];
-
-  for (const row of uniqueActivities) {
-    const pId = programMap.get(row.programCode);
-    if (!pId) continue;
-
-    const aId = actionMap.get(`${pId}-${row.actionCode}`);
-    if (!aId) continue;
-
-    activitiesToInsert.push({
-      actionId: aId,
-      code: row.activityCode,
-      name: row.activityName,
+    // Ensure Fiscal Year exists
+    const currentYear = new Date().getFullYear();
+    let fiscalYear = await db.query.fiscalYears.findFirst({
+      where: eq(fiscalYears.year, currentYear),
     });
-  }
 
-  if (activitiesToInsert.length > 0) {
-    await db
-      .insert(activities)
-      .values(activitiesToInsert)
-      .onConflictDoNothing();
-  }
-
-  const allActivities = await db.select().from(activities);
-  const activityMap = new Map(
-    allActivities.map((a) => [`${a.actionId}-${a.code}`, a.id]),
-  );
-
-  // --- Step D: Sync Admin Units ---
-  const uniqueAdmins = Array.from(
-    new Map(rawData.map((r) => [r.adminUnitCode, r])).values(),
-  ).filter((r) => r.adminUnitCode);
-
-  if (uniqueAdmins.length > 0) {
-    await db
-      .insert(adminUnits)
-      .values(
-        uniqueAdmins.map((r) => ({
-          code: r.adminUnitCode,
-          name: r.adminUnitName || "Admin Unit",
-        })),
-      )
-      .onConflictDoNothing();
-  }
-
-  const allAdmins = await db.select().from(adminUnits);
-  const adminMap = new Map(allAdmins.map((a) => [a.code!, a.id]));
-
-  // --- Step E: Bulk Insert Budget Lines ---
-  const linesToInsert: (typeof budgetLines.$inferInsert)[] = [];
-
-  for (const row of rawData) {
-    const pId = programMap.get(row.programCode);
-    if (!pId) {
-      console.warn(`Program not found: ${row.programCode}`);
-      continue;
+    if (!fiscalYear) {
+      const inserted = await db
+        .insert(fiscalYears)
+        .values({
+          year: currentYear,
+          name: `Budget ${currentYear}`,
+          isActive: true,
+        })
+        .returning();
+      fiscalYear = inserted[0];
     }
 
-    const actionId = actionMap.get(`${pId}-${row.actionCode}`);
-    if (!actionId) {
-      console.warn(`Action not found: ${pId}-${row.actionCode}`);
-      continue;
+    // Cache to minimize DB hits
+    const programCache = new Map<string, number>();
+    const actionCache = new Map<string, number>();
+    const activityCache = new Map<string, number>();
+    const taskCache = new Map<string, number>(); // NEW
+    const adminCache = new Map<string, number>();
+
+    for (const line of parsedData) {
+      // 1. Program
+      if (!programCache.has(line.programCode)) {
+        let prog = await db.query.programs.findFirst({
+          where: eq(programs.code, line.programCode),
+        });
+        if (!prog) {
+          const res = await db
+            .insert(programs)
+            .values({
+              code: line.programCode,
+              name: line.programName || `Programme ${line.programCode}`,
+            })
+            .returning();
+          prog = res[0];
+        }
+        programCache.set(line.programCode, prog.id);
+      }
+      const programId = programCache.get(line.programCode)!;
+
+      // 2. Action
+      const actionKey = `${programId}-${line.actionCode}`;
+      if (!actionCache.has(actionKey)) {
+        let action = await db.query.actions.findFirst({
+          where: and(
+            eq(actions.programId, programId),
+            eq(actions.code, line.actionCode),
+          ),
+        });
+        if (!action) {
+          const res = await db
+            .insert(actions)
+            .values({
+              programId,
+              code: line.actionCode,
+              name: line.actionName || `Action ${line.actionCode}`,
+            })
+            .returning();
+          action = res[0];
+        }
+        actionCache.set(actionKey, action.id);
+      }
+      const actionId = actionCache.get(actionKey)!;
+
+      // 3. Activity
+      const activityKey = `${actionId}-${line.activityCode}`;
+      if (!activityCache.has(activityKey)) {
+        let activity = await db.query.activities.findFirst({
+          where: and(
+            eq(activities.actionId, actionId),
+            eq(activities.code, line.activityCode),
+          ),
+        });
+        if (!activity) {
+          const res = await db
+            .insert(activities)
+            .values({
+              actionId,
+              code: line.activityCode,
+              name: line.activityName || `Activité ${line.activityCode}`,
+            })
+            .returning();
+          activity = res[0];
+        }
+        activityCache.set(activityKey, activity.id);
+      }
+      const activityId = activityCache.get(activityKey)!;
+
+      // 4. Task (NEW STEP)
+      // Use a default name if task is missing in Excel
+      const taskName = line.taskName || "Tâche par défaut";
+      const taskKey = `${activityId}-${taskName}`;
+
+      if (!taskCache.has(taskKey)) {
+        let task = await db.query.tasks.findFirst({
+          where: and(
+            eq(tasks.activityId, activityId),
+            eq(tasks.name, taskName),
+          ),
+        });
+        if (!task) {
+          const res = await db
+            .insert(tasks)
+            .values({
+              activityId,
+              name: taskName,
+              description: "Imported from Excel",
+            })
+            .returning();
+          task = res[0];
+        }
+        taskCache.set(taskKey, task.id);
+      }
+      const taskId = taskCache.get(taskKey)!;
+
+      // 5. Admin Unit
+      let adminUnitId: number | undefined = undefined;
+      if (line.adminUnitCode) {
+        if (!adminCache.has(line.adminUnitCode)) {
+          let admin = await db.query.adminUnits.findFirst({
+            where: eq(adminUnits.code, line.adminUnitCode),
+          });
+          if (!admin) {
+            const res = await db
+              .insert(adminUnits)
+              .values({
+                code: line.adminUnitCode,
+                name: line.adminUnitName || `Unit ${line.adminUnitCode}`,
+              })
+              .returning();
+            admin = res[0];
+          }
+          adminCache.set(line.adminUnitCode, admin.id);
+        }
+        adminUnitId = adminCache.get(line.adminUnitCode);
+      }
+
+      // 6. Budget Line
+      await db.insert(budgetLines).values({
+        fiscalYearId: fiscalYear.id,
+        taskId, // CHANGED: activityId -> taskId
+        adminUnitId,
+        paragraphCode: line.paragraphCode,
+        paragraphName: line.paragraphName,
+        ae: line.ae.toString(),
+        cp: line.cp.toString(),
+        engaged: line.engaged.toString(),
+      });
     }
 
-    const activityId = activityMap.get(`${actionId}-${row.activityCode}`);
-    if (!activityId) {
-      console.warn(`Activity not found: ${actionId}-${row.activityCode}`);
-      continue;
-    }
-
-    const adminId = row.adminUnitCode ? adminMap.get(row.adminUnitCode) : null;
-
-    linesToInsert.push({
-      fiscalYearId: fiscalYearId,
-      activityId: activityId,
-      adminUnitId: adminId || null,
-      paragraphCode: row.paragraphCode,
-      paragraphName: row.paragraphName,
-      ae: row.ae.toString(),
-      cp: row.cp.toString(),
-      engaged: row.engaged.toString(),
-    });
+    revalidatePath("/dashboard/budget");
+    return { success: true, count: parsedData.length };
+  } catch (err: any) {
+    console.error("Import Error:", err);
+    return { success: false, error: err.message };
   }
-
-  if (linesToInsert.length > 0) {
-    // Insert in batches to avoid overwhelming the database
-    const batchSize = 1000;
-    for (let i = 0; i < linesToInsert.length; i += batchSize) {
-      const batch = linesToInsert.slice(i, i + batchSize);
-      await db.insert(budgetLines).values(batch);
-      console.log(
-        `Inserted batch ${i / batchSize + 1} (${batch.length} lines)`,
-      );
-    }
-  }
-
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/budget");
-  revalidatePath("/dashboard/overview");
-  revalidatePath("/dashboard/programs");
-
-  return {
-    success: true,
-    count: linesToInsert.length,
-    message: `Successfully imported ${linesToInsert.length} budget lines`,
-  };
 }

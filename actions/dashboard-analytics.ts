@@ -6,6 +6,7 @@ import {
   programs,
   actions,
   activities,
+  tasks, // Make sure tasks is imported
   adminUnits,
 } from "@/db/schema";
 import { sql, eq, desc } from "drizzle-orm";
@@ -25,15 +26,14 @@ export async function getBudgetSummary() {
   const cp = parseFloat(data.totalCP || "0");
   const engaged = parseFloat(data.totalEngaged || "0");
 
-  // NOT (ae / engaged) which was causing 355.97%
   const executionRate = ae > 0 ? (engaged / ae) * 100 : 0;
 
   return {
     ae,
     cp,
     engaged,
-    executionRate, // Now correctly calculated
-    disponible: ae - engaged, // Available budget
+    executionRate,
+    disponible: ae - engaged,
     linesCount: Number(data.linesCount),
   };
 }
@@ -51,7 +51,8 @@ export async function getBudgetByProgram() {
       totalEngaged: sql<string>`COALESCE(SUM(CAST(${budgetLines.engaged} AS NUMERIC)), 0)`,
     })
     .from(budgetLines)
-    .innerJoin(activities, eq(budgetLines.activityId, activities.id))
+    .innerJoin(tasks, eq(budgetLines.taskId, tasks.id)) // 1. Join Task
+    .innerJoin(activities, eq(tasks.activityId, activities.id)) // 2. Join Activity
     .innerJoin(actions, eq(activities.actionId, actions.id))
     .innerJoin(programs, eq(actions.programId, programs.id))
     .groupBy(programs.id, programs.code, programs.name)
@@ -89,6 +90,7 @@ export async function getBudgetLinesRaw(page = 1, pageSize = 100) {
       actionName: actions.name,
       activity: activities.code,
       activityName: activities.name,
+      taskName: tasks.name,
       adminCode: adminUnits.code,
       adminName: adminUnits.name,
       paragraph: budgetLines.paragraphCode,
@@ -98,7 +100,8 @@ export async function getBudgetLinesRaw(page = 1, pageSize = 100) {
       engaged: budgetLines.engaged,
     })
     .from(budgetLines)
-    .innerJoin(activities, eq(budgetLines.activityId, activities.id))
+    .innerJoin(tasks, eq(budgetLines.taskId, tasks.id)) // Join Task
+    .innerJoin(activities, eq(tasks.activityId, activities.id)) // Join Activity
     .innerJoin(actions, eq(activities.actionId, actions.id))
     .innerJoin(programs, eq(actions.programId, programs.id))
     .leftJoin(adminUnits, eq(budgetLines.adminUnitId, adminUnits.id))
@@ -129,9 +132,6 @@ export async function getBudgetLinesRaw(page = 1, pageSize = 100) {
   };
 }
 
-/**
- * FIXED: Programs summary with correct calculations
- */
 export async function getProgramsSummary() {
   const rows = await db
     .select({
@@ -146,7 +146,8 @@ export async function getProgramsSummary() {
     .from(programs)
     .leftJoin(actions, eq(actions.programId, programs.id))
     .leftJoin(activities, eq(activities.actionId, actions.id))
-    .leftJoin(budgetLines, eq(budgetLines.activityId, activities.id))
+    .leftJoin(tasks, eq(tasks.activityId, activities.id)) // NEW: Join Tasks
+    .leftJoin(budgetLines, eq(budgetLines.taskId, tasks.id)) // FIXED: Use taskId
     .groupBy(programs.id, programs.code, programs.name)
     .orderBy(programs.code);
 
@@ -155,7 +156,6 @@ export async function getProgramsSummary() {
     const cp = parseFloat(r.totalCP || "0");
     const engaged = parseFloat(r.totalEngaged || "0");
 
-    // FIXED: Correct execution rate
     const executionRate = ae > 0 ? (engaged / ae) * 100 : 0;
 
     return {
@@ -203,7 +203,7 @@ export async function getAdminUnitStats() {
     browser: r.code || "unknown",
     name: r.name || "Unknown",
     visitors: Math.round(parseFloat(r.value || "0")),
-    fill: `hsl(var(--chart-${i + 1}))`, // Use theme colors
+    fill: `hsl(var(--chart-${i + 1}))`,
   }));
 
   if (others > 0) {

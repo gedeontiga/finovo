@@ -2,8 +2,10 @@
 
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableToolbar } from "@/components/ui/table/data-table-toolbar";
-import { useDataTable } from "@/hooks/use-data-table";
+import { useSimpleDataTable } from "@/hooks/use-simple-data-table";
 import { ColumnDef } from "@tanstack/react-table";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 // Make the props generic using <TData, TValue>
 interface BudgetTableProps<TData, TValue> {
@@ -13,16 +15,21 @@ interface BudgetTableProps<TData, TValue> {
 }
 
 export function BudgetTable<TData, TValue>({
-    data,
-    totalItems,
+    data: initialData,
     columns
 }: BudgetTableProps<TData, TValue>) {
+    const [data, setData] = useState(initialData);
+    const router = useRouter();
 
-    // The hook is usually generic, so we pass TData, TValue down
-    const { table } = useDataTable({
+    // Update local state when server data changes
+    useEffect(() => {
+        setData(initialData);
+    }, [initialData]);
+
+    // Use simple data table hook for client-side rendering
+    const table = useSimpleDataTable({
         data,
         columns,
-        pageCount: Math.ceil(totalItems / 10), // Adjust page size logic as needed
     });
 
     return (

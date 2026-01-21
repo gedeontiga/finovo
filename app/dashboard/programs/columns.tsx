@@ -140,7 +140,7 @@ const DeleteProgramCell = ({ row }: { row: ProgramRow }) => {
 				<Button
 					variant="ghost"
 					size="icon"
-					className="h-8 w-8 text-destructive"
+					className="h-8 w-8 text-destructive hover:text-destructive"
 				>
 					<IconTrash className="h-4 w-4" />
 				</Button>
@@ -165,11 +165,19 @@ const DeleteProgramCell = ({ row }: { row: ProgramRow }) => {
 	);
 };
 
+// FIXED: Using accessorFn for proper data binding
 export const columns: ColumnDef<ProgramRow>[] = [
 	{
 		id: "code",
-		accessorKey: "code",
-		header: "Code",
+		accessorFn: (row) => row.code,
+		header: ({ column }) => (
+			<div
+				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
+				onClick={column.getToggleSortingHandler()}
+			>
+				Code {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			</div>
+		),
 		cell: ({ row }) => {
 			const code = row.original.code;
 			return (
@@ -180,11 +188,26 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
+		enableHiding: true,
+		filterFn: "includesString",
+		sortingFn: "text",
+		meta: {
+			label: "Code",
+			variant: "text",
+			placeholder: "Filter by code...",
+		},
 	},
 	{
 		id: "name",
-		accessorKey: "name",
-		header: "Program Name",
+		accessorFn: (row) => row.name,
+		header: ({ column }) => (
+			<div
+				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
+				onClick={column.getToggleSortingHandler()}
+			>
+				Program Name {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			</div>
+		),
 		cell: ({ row }) => {
 			const name = row.original.name;
 			return (
@@ -195,11 +218,26 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
+		enableHiding: true,
+		filterFn: "includesString",
+		sortingFn: "text",
+		meta: {
+			label: "Program Name",
+			variant: "text",
+			placeholder: "Filter by name...",
+		},
 	},
 	{
 		id: "activitiesCount",
-		accessorKey: "activitiesCount",
-		header: "Budget Lines",
+		accessorFn: (row) => row.activitiesCount,
+		header: ({ column }) => (
+			<div
+				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
+				onClick={column.getToggleSortingHandler()}
+			>
+				Budget Lines {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			</div>
+		),
 		cell: ({ row }) => {
 			const count = row.original.activitiesCount;
 			return (
@@ -209,54 +247,112 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			);
 		},
 		enableSorting: true,
+		enableColumnFilter: true,
+		enableHiding: true,
+		filterFn: "equals",
+		meta: {
+			label: "Budget Lines",
+			variant: "number",
+			placeholder: "Filter by count...",
+		},
 	},
 	{
 		id: "ae",
-		accessorKey: "ae",
-		header: () => <div className="text-right font-semibold">Auth (AE)</div>,
+		accessorFn: (row) => row.ae,
+		header: ({ column }) => (
+			<div
+				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded text-right"
+				onClick={column.getToggleSortingHandler()}
+			>
+				Auth (AE) {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			</div>
+		),
 		cell: ({ row }) => {
 			const value = row.original.ae;
 			return (
-				<div className="text-right font-mono text-sm min-w-30">
+				<div className="text-right font-mono text-sm min-w-30 text-blue-600 dark:text-blue-400">
 					{formatCurrency(value)}
 				</div>
 			);
 		},
 		enableSorting: true,
+		enableColumnFilter: true,
+		enableHiding: true,
+		filterFn: "equals",
+		meta: {
+			label: "Auth (AE)",
+			variant: "number",
+			placeholder: "Filter by AE...",
+		},
 	},
 	{
 		id: "engaged",
-		accessorKey: "engaged",
-		header: () => <div className="text-right font-semibold">Engaged</div>,
+		accessorFn: (row) => row.engaged,
+		header: ({ column }) => (
+			<div
+				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded text-right"
+				onClick={column.getToggleSortingHandler()}
+			>
+				Engaged {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			</div>
+		),
 		cell: ({ row }) => {
 			const value = row.original.engaged;
 			return (
-				<div className="text-right font-mono text-sm min-w-30">
+				<div className="text-right font-mono text-sm min-w-30 text-green-600 dark:text-green-400">
 					{formatCurrency(value)}
 				</div>
 			);
 		},
 		enableSorting: true,
+		enableColumnFilter: true,
+		enableHiding: true,
+		filterFn: "equals",
+		meta: {
+			label: "Engaged",
+			variant: "number",
+			placeholder: "Filter by engaged...",
+		},
 	},
 	{
 		id: "executionRate",
-		accessorKey: "executionRate",
-		header: "Execution",
+		accessorFn: (row) => row.executionRate,
+		header: ({ column }) => (
+			<div
+				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
+				onClick={column.getToggleSortingHandler()}
+			>
+				Execution {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			</div>
+		),
 		cell: ({ row }) => {
 			const rate = row.original.executionRate;
 			return (
 				<div className="min-w-32">
-					<div className="flex justify-between text-xs mb-1">
+					<div className="flex justify-between text-xs mb-1.5">
 						<span className="font-semibold">{rate.toFixed(1)}%</span>
 					</div>
 					<Progress
-						value={rate}
-						className={`h-2 ${rate > 90 ? "bg-red-100 dark:bg-red-950" : ""}`}
+						value={Math.min(rate, 100)}
+						className={`h-2.5 ${rate > 90
+							? "bg-red-100 dark:bg-red-950"
+							: rate > 70
+								? "bg-yellow-100 dark:bg-yellow-950"
+								: "bg-green-100 dark:bg-green-950"
+							}`}
 					/>
 				</div>
 			);
 		},
 		enableSorting: true,
+		enableColumnFilter: true,
+		enableHiding: true,
+		filterFn: "equals",
+		meta: {
+			label: "Execution",
+			variant: "number",
+			placeholder: "Filter by rate...",
+		},
 	},
 	{
 		id: "actions",
@@ -268,5 +364,6 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			</div>
 		),
 		enableSorting: false,
+		enableHiding: false,
 	},
 ];

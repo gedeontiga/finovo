@@ -51,7 +51,7 @@ interface UseDataTableProps<TData>
       | "manualPagination"
       | "manualSorting"
     >,
-    Required<Pick<TableOptions<TData>, "pageCount">> {
+    Partial<Pick<TableOptions<TData>, "pageCount">> {
   initialState?: Omit<Partial<TableState>, "sorting"> & {
     sorting?: ExtendedColumnSort<TData>[];
   };
@@ -259,13 +259,10 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     [debouncedSetFilterValues, filterableColumns, enableAdvancedFilter],
   );
 
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     ...tableProps,
     columns,
-    initialState,
-    pageCount,
     state: {
-      pagination,
       sorting,
       columnVisibility,
       rowSelection,
@@ -277,20 +274,15 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    onPaginationChange,
     onSortingChange,
     onColumnFiltersChange,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    manualPagination: true,
-    manualSorting: true,
-    manualFiltering: true,
   });
 
   return { table, shallow, debounceMs, throttleMs };

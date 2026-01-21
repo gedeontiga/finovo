@@ -11,18 +11,11 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations, type Relations } from "drizzle-orm";
 
-// ============================================================================
-// IMPROVED SCHEMA FOR 3NF COMPLIANCE AND ACID PRINCIPLES
-// ============================================================================
-
-/**
- * Fiscal Years - Master table for budget periods
- * Each fiscal year represents a distinct budget cycle
- */
+// --- Fiscal Years (Unchanged) ---
 export const fiscalYears = pgTable("fiscal_years", {
   id: serial("id").primaryKey(),
   year: integer("year").notNull().unique(),
-  name: text("name").notNull(), // e.g., "Budget Initial 2024"
+  name: text("name").notNull(), // Added name (e.g., "Budget 2024")
   isActive: boolean("is_active").default(true).notNull(),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
@@ -30,15 +23,12 @@ export const fiscalYears = pgTable("fiscal_years", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-/**
- * Programs - Top level of budget hierarchy
- * Unique by code within the entire system
- */
+// --- Programs (Unchanged) ---
 export const programs = pgTable(
   "programs",
   {
     id: serial("id").primaryKey(),
-    code: text("code").notNull(),
+    code: text("code").notNull(), // e.g., "116"
     name: text("name").notNull(),
     description: text("description"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -49,10 +39,7 @@ export const programs = pgTable(
   }),
 );
 
-/**
- * Actions - Second level of budget hierarchy
- * Unique by (programId, code) combination
- */
+// --- Actions (Unchanged) ---
 export const actions = pgTable(
   "actions",
   {
@@ -60,7 +47,7 @@ export const actions = pgTable(
     programId: integer("program_id")
       .references(() => programs.id, { onDelete: "cascade" })
       .notNull(),
-    code: text("code").notNull(),
+    code: text("code").notNull(), // e.g., "01"
     name: text("name").notNull(),
     description: text("description"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -75,10 +62,7 @@ export const actions = pgTable(
   }),
 );
 
-/**
- * Activities - Third level of budget hierarchy
- * Unique by (actionId, code) combination
- */
+// --- Activities (Unchanged) ---
 export const activities = pgTable(
   "activities",
   {
@@ -86,7 +70,7 @@ export const activities = pgTable(
     actionId: integer("action_id")
       .references(() => actions.id, { onDelete: "cascade" })
       .notNull(),
-    code: text("code").notNull(),
+    code: text("code").notNull(), // e.g., "01" (Activités often have codes in your PDF)
     name: text("name").notNull(),
     description: text("description"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -101,15 +85,35 @@ export const activities = pgTable(
   }),
 );
 
-/**
- * Administrative Units - Organizational units managing budgets
- * Unique by code
- */
+// --- NEW: Tasks (Tâches) ---
+export const tasks = pgTable(
+  "tasks",
+  {
+    id: serial("id").primaryKey(),
+    activityId: integer("activity_id")
+      .references(() => activities.id, { onDelete: "cascade" })
+      .notNull(),
+    name: text("name").notNull(), // Tasks in your PDF are mostly names, sometimes codes
+    description: text("description"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => ({
+    // Unique constraint: A task name shouldn't repeat within the same activity
+    activityTaskIdx: uniqueIndex("task_activity_name_idx").on(
+      t.activityId,
+      t.name,
+    ),
+    activityIdIdx: index("task_activity_id_idx").on(t.activityId),
+  }),
+);
+
+// --- Admin Units (Unchanged) ---
 export const adminUnits = pgTable(
   "admin_units",
   {
     id: serial("id").primaryKey(),
-    code: text("code").notNull(),
+    code: text("code").notNull(), // e.g., "541127"
     name: text("name").notNull(),
     description: text("description"),
     parentId: integer("parent_id").references((): any => adminUnits.id),
@@ -122,76 +126,55 @@ export const adminUnits = pgTable(
   }),
 );
 
-/**
- * Budget Lines - Detailed budget allocations
- * Core transactional table with ACID compliance
- *
- * ACID Compliance:
- * - Atomicity: All inserts/updates are transactional
- * - Consistency: Foreign keys + constraints ensure data integrity
- * - Isolation: Handled by database transaction levels
- * - Durability: PostgreSQL ensures committed data is persistent
- */
+// --- Budget Lines (Updated Link) ---
 export const budgetLines = pgTable(
   "budget_lines",
   {
     id: serial("id").primaryKey(),
-
-    // Foreign Keys - Required for 3NF
     fiscalYearId: integer("fiscal_year_id")
       .references(() => fiscalYears.id, { onDelete: "restrict" })
-      .notNull(), // Made NOT NULL for data integrity
-    activityId: integer("activity_id")
-      .references(() => activities.id, { onDelete: "restrict" })
       .notNull(),
+
+    // CHANGED: Linked to Task instead of Activity
+    taskId: integer("task_id")
+      .references(() => tasks.id, { onDelete: "restrict" })
+      .notNull(),
+
     adminUnitId: integer("admin_unit_id").references(() => adminUnits.id, {
       onDelete: "set null",
     }),
 
-    // Budget classification
-    paragraphCode: text("paragraph_code").notNull(),
+    paragraphCode: text("paragraph_code").notNull(), // 6 digits
     paragraphName: text("paragraph_name").notNull(),
 
-    // Financial amounts - Using DECIMAL for precision
     ae: decimal("ae", { precision: 20, scale: 2 }).default("0").notNull(),
     cp: decimal("cp", { precision: 20, scale: 2 }).default("0").notNull(),
     engaged: decimal("engaged", { precision: 20, scale: 2 })
       .default("0")
       .notNull(),
 
-    // Audit fields
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     createdBy: text("created_by"),
     updatedBy: text("updated_by"),
-
-    // Soft delete support
     deletedAt: timestamp("deleted_at"),
   },
   (t) => ({
-    // Composite unique constraint for business logic
-    // One budget line per fiscal year + activity + paragraph + admin unit
+    // Updated unique index to include taskId
     uniqueBudgetLine: uniqueIndex("budget_line_unique_idx").on(
       t.fiscalYearId,
-      t.activityId,
+      t.taskId,
       t.paragraphCode,
       t.adminUnitId,
     ),
-
-    // Indexes for query performance
     fiscalYearIdx: index("budget_fiscal_year_idx").on(t.fiscalYearId),
-    activityIdx: index("budget_activity_idx").on(t.activityId),
+    taskIdx: index("budget_task_idx").on(t.taskId), // Index on new column
     adminUnitIdx: index("budget_admin_unit_idx").on(t.adminUnitId),
     paragraphIdx: index("budget_paragraph_idx").on(t.paragraphCode),
-
-    // Index for soft delete queries
-    deletedAtIdx: index("budget_deleted_at_idx").on(t.deletedAt),
   }),
 );
 
-// ============================================================================
-// RELATIONS FOR ORM QUERYING
-// ============================================================================
+// --- Updated Relations ---
 
 export const programsRelations = relations(programs, ({ many }) => ({
   actions: many(actions),
@@ -210,20 +193,25 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
     fields: [activities.actionId],
     references: [actions.id],
   }),
-  budgetLines: many(budgetLines),
+  tasks: many(tasks), // Activity has many Tasks
 }));
 
-export const adminUnitsRelations: Relations<any, any> = relations(
-  adminUnits,
-  ({ one, many }) => ({
-    parent: one(adminUnits, {
-      fields: [adminUnits.parentId],
-      references: [adminUnits.id],
-    }),
-    children: many(adminUnits),
-    budgetLines: many(budgetLines),
+export const tasksRelations = relations(tasks, ({ one, many }) => ({
+  activity: one(activities, {
+    fields: [tasks.activityId],
+    references: [activities.id],
   }),
-);
+  budgetLines: many(budgetLines), // Task has many Budget Lines
+}));
+
+export const adminUnitsRelations = relations(adminUnits, ({ one, many }) => ({
+  parent: one(adminUnits, {
+    fields: [adminUnits.parentId],
+    references: [adminUnits.id],
+  }),
+  children: many(adminUnits),
+  budgetLines: many(budgetLines),
+}));
 
 export const fiscalYearsRelations = relations(fiscalYears, ({ many }) => ({
   budgetLines: many(budgetLines),
@@ -234,9 +222,10 @@ export const budgetLinesRelations = relations(budgetLines, ({ one }) => ({
     fields: [budgetLines.fiscalYearId],
     references: [fiscalYears.id],
   }),
-  activity: one(activities, {
-    fields: [budgetLines.activityId],
-    references: [activities.id],
+  task: one(tasks, {
+    // Renamed from activity to task
+    fields: [budgetLines.taskId],
+    references: [tasks.id],
   }),
   adminUnit: one(adminUnits, {
     fields: [budgetLines.adminUnitId],

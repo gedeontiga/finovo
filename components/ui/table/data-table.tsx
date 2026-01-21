@@ -26,7 +26,7 @@ export function DataTable<TData>({
   return (
     <div className='flex flex-1 flex-col space-y-4'>
       {children}
-      <div className='relative flex flex-1'>
+      <div className='relative flex flex-1 min-h-96'>
         <div className='absolute inset-0 flex overflow-hidden rounded-lg border'>
           <ScrollArea className='h-full w-full'>
             <Table>
@@ -40,13 +40,25 @@ export function DataTable<TData>({
                         style={{
                           ...getCommonPinningStyles({ column: header.column })
                         }}
+                        className={header.column.getCanSort() ? 'cursor-pointer select-none hover:bg-muted-foreground/10' : ''}
+                        onClick={header.column.getToggleSortingHandler()}
                       >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
+                        <div className='flex items-center gap-1'>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                          {header.column.getCanSort() && (
+                            <span className='text-xs text-muted-foreground'>
+                              {{
+                                asc: ' ↑',
+                                desc: ' ↓',
+                              }[header.column.getIsSorted() as string] ?? ' ⇅'}
+                            </span>
                           )}
+                        </div>
                       </TableHead>
                     ))}
                   </TableRow>
