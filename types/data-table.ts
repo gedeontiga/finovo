@@ -8,6 +8,8 @@ declare module "@tanstack/react-table" {
     label?: string;
     placeholder?: string;
     variant?: FilterVariant;
+    filterable?: boolean;
+    filterVariant?: "text" | "number" | "select" | "checkbox";
     options?: Option[];
     range?: [number, number];
     unit?: string;

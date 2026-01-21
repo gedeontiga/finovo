@@ -13,7 +13,7 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { IconEdit, IconTrash, IconArrowUp, IconArrowDown, IconSelector } from "@tabler/icons-react";
+import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 import {
 	updateProgramAction,
@@ -32,6 +32,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
 
 const formatCurrency = (value: number) =>
 	new Intl.NumberFormat("fr-FR", {
@@ -165,35 +166,10 @@ const DeleteProgramCell = ({ row }: { row: ProgramRow }) => {
 	);
 };
 
-// Sortable Header Component
-const SortableHeader = ({ column, children }: { column: any; children: React.ReactNode }) => {
-	if (!column.getCanSort()) {
-		return <div className="font-medium">{children}</div>;
-	}
-
-	return (
-		<Button
-			variant="ghost"
-			size="sm"
-			className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-accent/50"
-			onClick={column.getToggleSortingHandler()}
-		>
-			<span className="font-medium">{children}</span>
-			{column.getIsSorted() === 'asc' ? (
-				<IconArrowUp className="ml-2 h-4 w-4" />
-			) : column.getIsSorted() === 'desc' ? (
-				<IconArrowDown className="ml-2 h-4 w-4" />
-			) : (
-				<IconSelector className="ml-2 h-4 w-4 opacity-50" />
-			)}
-		</Button>
-	);
-};
-
 export const columns: ColumnDef<ProgramRow>[] = [
 	{
 		accessorKey: "code",
-		header: ({ column }) => <SortableHeader column={column}>Code</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Code" />,
 		cell: ({ row }) => {
 			const code = row.original.code;
 			return (
@@ -207,11 +183,13 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		filterFn: "includesString",
 		meta: {
 			label: "Code",
+			filterable: true,
+			filterVariant: "text" as const,
 		},
 	},
 	{
 		accessorKey: "name",
-		header: ({ column }) => <SortableHeader column={column}>Program Name</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Program Name" />,
 		cell: ({ row }) => {
 			const name = row.original.name;
 			return (
@@ -225,11 +203,13 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		filterFn: "includesString",
 		meta: {
 			label: "Program Name",
+			filterable: true,
+			filterVariant: "text" as const,
 		},
 	},
 	{
 		accessorKey: "activitiesCount",
-		header: ({ column }) => <SortableHeader column={column}>Budget Lines</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Budget Lines" />,
 		cell: ({ row }) => {
 			const count = row.original.activitiesCount;
 			return (
@@ -249,7 +229,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		accessorKey: "ae",
 		header: ({ column }) => (
 			<div className="text-right">
-				<SortableHeader column={column}>Auth (AE)</SortableHeader>
+				<DataTableColumnHeader column={column} title="Auth (AE)" />
 			</div>
 		),
 		cell: ({ row }) => {
@@ -271,7 +251,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		accessorKey: "engaged",
 		header: ({ column }) => (
 			<div className="text-right">
-				<SortableHeader column={column}>Engaged</SortableHeader>
+				<DataTableColumnHeader column={column} title="Engaged" />
 			</div>
 		),
 		cell: ({ row }) => {
@@ -291,7 +271,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 	},
 	{
 		accessorKey: "executionRate",
-		header: ({ column }) => <SortableHeader column={column}>Execution</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Execution" />,
 		cell: ({ row }) => {
 			const rate = row.original.executionRate;
 			return (

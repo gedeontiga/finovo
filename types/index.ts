@@ -1,4 +1,5 @@
 import { Icons } from "@/components/icons";
+import "@/types/data-table";
 
 export interface PermissionCheck {
   permission?: string;

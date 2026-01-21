@@ -12,12 +12,13 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { IconEdit, IconArrowUp, IconArrowDown, IconSelector } from "@tabler/icons-react";
+import { IconEdit } from "@tabler/icons-react";
 import { useState } from "react";
 import { updateBudgetLineAction } from "@/actions/budget-actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { DataTableColumnHeader } from "@/components/ui/table/data-table-column-header";
 
 export type BudgetLineRow = {
 	id: number;
@@ -174,35 +175,10 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 	);
 };
 
-// Sortable Header Component
-const SortableHeader = ({ column, children }: { column: any; children: React.ReactNode }) => {
-	if (!column.getCanSort()) {
-		return <div className="font-medium">{children}</div>;
-	}
-
-	return (
-		<Button
-			variant="ghost"
-			size="sm"
-			className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-accent/50"
-			onClick={column.getToggleSortingHandler()}
-		>
-			<span className="font-medium">{children}</span>
-			{column.getIsSorted() === 'asc' ? (
-				<IconArrowUp className="ml-2 h-4 w-4" />
-			) : column.getIsSorted() === 'desc' ? (
-				<IconArrowDown className="ml-2 h-4 w-4" />
-			) : (
-				<IconSelector className="ml-2 h-4 w-4 opacity-50" />
-			)}
-		</Button>
-	);
-};
-
 export const columns: ColumnDef<BudgetLineRow>[] = [
 	{
 		accessorKey: "program",
-		header: ({ column }) => <SortableHeader column={column}>Program</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Program" />,
 		cell: ({ row }) => {
 			const program = row.original.program;
 			const programName = row.original.programName;
@@ -225,11 +201,13 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		filterFn: 'includesString',
 		meta: {
 			label: "Program",
+			filterable: true,
+			filterVariant: "text" as const,
 		},
 	},
 	{
 		accessorKey: "activity",
-		header: ({ column }) => <SortableHeader column={column}>Activity</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Activity" />,
 		cell: ({ row }) => {
 			const activity = row.original.activity;
 			const activityName = row.original.activityName;
@@ -252,11 +230,13 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		filterFn: 'includesString',
 		meta: {
 			label: "Activity",
+			filterable: true,
+			filterVariant: "text" as const,
 		},
 	},
 	{
 		accessorKey: "adminCode",
-		header: ({ column }) => <SortableHeader column={column}>Admin Unit</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Admin Unit" />,
 		cell: ({ row }) => {
 			const code = row.original.adminCode;
 			const name = row.original.adminName;
@@ -282,11 +262,13 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		filterFn: 'includesString',
 		meta: {
 			label: "Admin Unit",
+			filterable: true,
+			filterVariant: "text" as const,
 		},
 	},
 	{
 		accessorKey: "paragraph",
-		header: ({ column }) => <SortableHeader column={column}>Paragraph</SortableHeader>,
+		header: ({ column }) => <DataTableColumnHeader column={column} title="Paragraph" />,
 		cell: ({ row }) => {
 			const paragraph = row.original.paragraph;
 			const paragraphName = row.original.paragraphName;
@@ -309,13 +291,15 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		filterFn: 'includesString',
 		meta: {
 			label: "Paragraph",
+			filterable: true,
+			filterVariant: "text" as const,
 		},
 	},
 	{
 		accessorKey: "ae",
 		header: ({ column }) => (
 			<div className="text-right">
-				<SortableHeader column={column}>AE</SortableHeader>
+				<DataTableColumnHeader column={column} title="AE" />
 			</div>
 		),
 		cell: ({ row }) => {
@@ -337,7 +321,7 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		accessorKey: "cp",
 		header: ({ column }) => (
 			<div className="text-right">
-				<SortableHeader column={column}>CP</SortableHeader>
+				<DataTableColumnHeader column={column} title="CP" />
 			</div>
 		),
 		cell: ({ row }) => {
@@ -359,7 +343,7 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		accessorKey: "engaged",
 		header: ({ column }) => (
 			<div className="text-right">
-				<SortableHeader column={column}>Engaged</SortableHeader>
+				<DataTableColumnHeader column={column} title="Engaged" />
 			</div>
 		),
 		cell: ({ row }) => {
