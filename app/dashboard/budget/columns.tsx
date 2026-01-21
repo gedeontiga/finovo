@@ -12,7 +12,7 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { IconEdit } from "@tabler/icons-react";
+import { IconEdit, IconArrowUp, IconArrowDown, IconSelector } from "@tabler/icons-react";
 import { useState } from "react";
 import { updateBudgetLineAction } from "@/actions/budget-actions";
 import { toast } from "sonner";
@@ -174,12 +174,35 @@ const EditCell = ({ row }: { row: BudgetLineRow }) => {
 	);
 };
 
-// FIXED: Proper column definitions with accessorFn for proper data access
+// Sortable Header Component
+const SortableHeader = ({ column, children }: { column: any; children: React.ReactNode }) => {
+	if (!column.getCanSort()) {
+		return <div className="font-medium">{children}</div>;
+	}
+
+	return (
+		<Button
+			variant="ghost"
+			size="sm"
+			className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-accent/50"
+			onClick={column.getToggleSortingHandler()}
+		>
+			<span className="font-medium">{children}</span>
+			{column.getIsSorted() === 'asc' ? (
+				<IconArrowUp className="ml-2 h-4 w-4" />
+			) : column.getIsSorted() === 'desc' ? (
+				<IconArrowDown className="ml-2 h-4 w-4" />
+			) : (
+				<IconSelector className="ml-2 h-4 w-4 opacity-50" />
+			)}
+		</Button>
+	);
+};
+
 export const columns: ColumnDef<BudgetLineRow>[] = [
 	{
-		id: "program",
-		accessorFn: (row) => row.program,
-		header: "Program",
+		accessorKey: "program",
+		header: ({ column }) => <SortableHeader column={column}>Program</SortableHeader>,
 		cell: ({ row }) => {
 			const program = row.original.program;
 			const programName = row.original.programName;
@@ -199,17 +222,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
-		enableHiding: true,
+		filterFn: 'includesString',
 		meta: {
 			label: "Program",
-			variant: "text",
-			placeholder: "Filter by program...",
 		},
 	},
 	{
-		id: "activity",
-		accessorFn: (row) => row.activity,
-		header: "Activity",
+		accessorKey: "activity",
+		header: ({ column }) => <SortableHeader column={column}>Activity</SortableHeader>,
 		cell: ({ row }) => {
 			const activity = row.original.activity;
 			const activityName = row.original.activityName;
@@ -229,17 +249,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
-		enableHiding: true,
+		filterFn: 'includesString',
 		meta: {
 			label: "Activity",
-			variant: "text",
-			placeholder: "Filter by activity...",
 		},
 	},
 	{
-		id: "adminCode",
-		accessorFn: (row) => row.adminCode,
-		header: "Admin Unit",
+		accessorKey: "adminCode",
+		header: ({ column }) => <SortableHeader column={column}>Admin Unit</SortableHeader>,
 		cell: ({ row }) => {
 			const code = row.original.adminCode;
 			const name = row.original.adminName;
@@ -262,17 +279,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
-		enableHiding: true,
+		filterFn: 'includesString',
 		meta: {
 			label: "Admin Unit",
-			variant: "text",
-			placeholder: "Filter by admin unit...",
 		},
 	},
 	{
-		id: "paragraph",
-		accessorFn: (row) => row.paragraph,
-		header: "Paragraph",
+		accessorKey: "paragraph",
+		header: ({ column }) => <SortableHeader column={column}>Paragraph</SortableHeader>,
 		cell: ({ row }) => {
 			const paragraph = row.original.paragraph;
 			const paragraphName = row.original.paragraphName;
@@ -292,17 +306,18 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
-		enableHiding: true,
+		filterFn: 'includesString',
 		meta: {
 			label: "Paragraph",
-			variant: "text",
-			placeholder: "Filter by paragraph...",
 		},
 	},
 	{
-		id: "ae",
-		accessorFn: (row) => row.ae,
-		header: "AE",
+		accessorKey: "ae",
+		header: ({ column }) => (
+			<div className="text-right">
+				<SortableHeader column={column}>AE</SortableHeader>
+			</div>
+		),
 		cell: ({ row }) => {
 			const value = row.original.ae;
 			return (
@@ -312,18 +327,19 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
-		enableHiding: true,
+		enableColumnFilter: false,
+		sortingFn: 'basic',
 		meta: {
 			label: "AE (Authorized)",
-			variant: "number",
-			placeholder: "Filter by AE...",
 		},
 	},
 	{
-		id: "cp",
-		accessorFn: (row) => row.cp,
-		header: "CP",
+		accessorKey: "cp",
+		header: ({ column }) => (
+			<div className="text-right">
+				<SortableHeader column={column}>CP</SortableHeader>
+			</div>
+		),
 		cell: ({ row }) => {
 			const value = row.original.cp;
 			return (
@@ -333,18 +349,19 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
-		enableHiding: true,
+		enableColumnFilter: false,
+		sortingFn: 'basic',
 		meta: {
 			label: "CP (Credits)",
-			variant: "number",
-			placeholder: "Filter by CP...",
 		},
 	},
 	{
-		id: "engaged",
-		accessorFn: (row) => row.engaged,
-		header: "Engaged",
+		accessorKey: "engaged",
+		header: ({ column }) => (
+			<div className="text-right">
+				<SortableHeader column={column}>Engaged</SortableHeader>
+			</div>
+		),
 		cell: ({ row }) => {
 			const val = row.original.engaged;
 			const ae = row.original.ae;
@@ -369,12 +386,10 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
-		enableHiding: true,
+		enableColumnFilter: false,
+		sortingFn: 'basic',
 		meta: {
 			label: "Engaged",
-			variant: "number",
-			placeholder: "Filter by engaged...",
 		},
 	},
 	{

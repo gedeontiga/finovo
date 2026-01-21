@@ -13,7 +13,7 @@ import {
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconTrash, IconArrowUp, IconArrowDown, IconSelector } from "@tabler/icons-react";
 import { useState } from "react";
 import {
 	updateProgramAction,
@@ -165,19 +165,35 @@ const DeleteProgramCell = ({ row }: { row: ProgramRow }) => {
 	);
 };
 
-// FIXED: Using accessorFn for proper data binding
+// Sortable Header Component
+const SortableHeader = ({ column, children }: { column: any; children: React.ReactNode }) => {
+	if (!column.getCanSort()) {
+		return <div className="font-medium">{children}</div>;
+	}
+
+	return (
+		<Button
+			variant="ghost"
+			size="sm"
+			className="-ml-3 h-8 data-[state=open]:bg-accent hover:bg-accent/50"
+			onClick={column.getToggleSortingHandler()}
+		>
+			<span className="font-medium">{children}</span>
+			{column.getIsSorted() === 'asc' ? (
+				<IconArrowUp className="ml-2 h-4 w-4" />
+			) : column.getIsSorted() === 'desc' ? (
+				<IconArrowDown className="ml-2 h-4 w-4" />
+			) : (
+				<IconSelector className="ml-2 h-4 w-4 opacity-50" />
+			)}
+		</Button>
+	);
+};
+
 export const columns: ColumnDef<ProgramRow>[] = [
 	{
-		id: "code",
-		accessorFn: (row) => row.code,
-		header: ({ column }) => (
-			<div
-				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
-				onClick={column.getToggleSortingHandler()}
-			>
-				Code {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
-			</div>
-		),
+		accessorKey: "code",
+		header: ({ column }) => <SortableHeader column={column}>Code</SortableHeader>,
 		cell: ({ row }) => {
 			const code = row.original.code;
 			return (
@@ -188,26 +204,14 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
-		enableHiding: true,
 		filterFn: "includesString",
-		sortingFn: "text",
 		meta: {
 			label: "Code",
-			variant: "text",
-			placeholder: "Filter by code...",
 		},
 	},
 	{
-		id: "name",
-		accessorFn: (row) => row.name,
-		header: ({ column }) => (
-			<div
-				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
-				onClick={column.getToggleSortingHandler()}
-			>
-				Program Name {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
-			</div>
-		),
+		accessorKey: "name",
+		header: ({ column }) => <SortableHeader column={column}>Program Name</SortableHeader>,
 		cell: ({ row }) => {
 			const name = row.original.name;
 			return (
@@ -218,26 +222,14 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		},
 		enableSorting: true,
 		enableColumnFilter: true,
-		enableHiding: true,
 		filterFn: "includesString",
-		sortingFn: "text",
 		meta: {
 			label: "Program Name",
-			variant: "text",
-			placeholder: "Filter by name...",
 		},
 	},
 	{
-		id: "activitiesCount",
-		accessorFn: (row) => row.activitiesCount,
-		header: ({ column }) => (
-			<div
-				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
-				onClick={column.getToggleSortingHandler()}
-			>
-				Budget Lines {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
-			</div>
-		),
+		accessorKey: "activitiesCount",
+		header: ({ column }) => <SortableHeader column={column}>Budget Lines</SortableHeader>,
 		cell: ({ row }) => {
 			const count = row.original.activitiesCount;
 			return (
@@ -247,24 +239,17 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
-		enableHiding: true,
-		filterFn: "equals",
+		enableColumnFilter: false,
+		sortingFn: 'basic',
 		meta: {
 			label: "Budget Lines",
-			variant: "number",
-			placeholder: "Filter by count...",
 		},
 	},
 	{
-		id: "ae",
-		accessorFn: (row) => row.ae,
+		accessorKey: "ae",
 		header: ({ column }) => (
-			<div
-				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded text-right"
-				onClick={column.getToggleSortingHandler()}
-			>
-				Auth (AE) {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			<div className="text-right">
+				<SortableHeader column={column}>Auth (AE)</SortableHeader>
 			</div>
 		),
 		cell: ({ row }) => {
@@ -276,24 +261,17 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
-		enableHiding: true,
-		filterFn: "equals",
+		enableColumnFilter: false,
+		sortingFn: 'basic',
 		meta: {
 			label: "Auth (AE)",
-			variant: "number",
-			placeholder: "Filter by AE...",
 		},
 	},
 	{
-		id: "engaged",
-		accessorFn: (row) => row.engaged,
+		accessorKey: "engaged",
 		header: ({ column }) => (
-			<div
-				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded text-right"
-				onClick={column.getToggleSortingHandler()}
-			>
-				Engaged {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
+			<div className="text-right">
+				<SortableHeader column={column}>Engaged</SortableHeader>
 			</div>
 		),
 		cell: ({ row }) => {
@@ -305,26 +283,15 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
-		enableHiding: true,
-		filterFn: "equals",
+		enableColumnFilter: false,
+		sortingFn: 'basic',
 		meta: {
 			label: "Engaged",
-			variant: "number",
-			placeholder: "Filter by engaged...",
 		},
 	},
 	{
-		id: "executionRate",
-		accessorFn: (row) => row.executionRate,
-		header: ({ column }) => (
-			<div
-				className="cursor-pointer select-none hover:bg-muted-foreground/10 px-2 py-1 rounded"
-				onClick={column.getToggleSortingHandler()}
-			>
-				Execution {column.getIsSorted() ? (column.getIsSorted() === "asc" ? "↑" : "↓") : "⇅"}
-			</div>
-		),
+		accessorKey: "executionRate",
+		header: ({ column }) => <SortableHeader column={column}>Execution</SortableHeader>,
 		cell: ({ row }) => {
 			const rate = row.original.executionRate;
 			return (
@@ -345,13 +312,10 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
-		enableHiding: true,
-		filterFn: "equals",
+		enableColumnFilter: false,
+		sortingFn: 'basic',
 		meta: {
 			label: "Execution",
-			variant: "number",
-			placeholder: "Filter by rate...",
 		},
 	},
 	{

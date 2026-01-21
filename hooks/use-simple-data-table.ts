@@ -2,61 +2,61 @@
 
 import {
   type ColumnDef,
-  type TableOptions,
-  type SortingState,
   type ColumnFiltersState,
+  type PaginationState,
+  type SortingState,
   type VisibilityState,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFacetedMinMaxValues,
   useReactTable,
 } from "@tanstack/react-table";
-import * as React from "react";
+import { useState } from "react";
 
-interface UseSimpleDataTableProps<TData, TValue = unknown> extends Omit<
-  TableOptions<TData>,
-  | "getCoreRowModel"
-  | "state"
-  | "onSortingChange"
-  | "onColumnFiltersChange"
-  | "onColumnVisibilityChange"
-> {
-  columns: ColumnDef<TData, TValue>[];
+interface UseSimpleDataTableProps<TData> {
+  data: TData[];
+  columns: ColumnDef<TData, any>[];
+  initialPageSize?: number;
 }
 
-export function useSimpleDataTable<TData, TValue = unknown>({
+/**
+ * Simple client-side data table hook with full sorting, filtering, and pagination
+ */
+export function useSimpleDataTable<TData>({
+  data,
   columns,
-  ...tableProps
-}: UseSimpleDataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  initialPageSize = 10,
+}: UseSimpleDataTableProps<TData>) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: initialPageSize,
+  });
 
-  const table = useReactTable<TData>({
-    ...tableProps,
+  const table = useReactTable({
+    data,
     columns,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      pagination,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    // Enable manual features if needed
+    manualPagination: false,
+    manualSorting: false,
+    manualFiltering: false,
   });
 
   return table;
