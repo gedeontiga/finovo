@@ -2,39 +2,49 @@
 
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableToolbar } from "@/components/ui/table/data-table-toolbar";
-import { useSimpleDataTable } from "@/hooks/use-simple-data-table";
-import { ColumnDef } from "@tanstack/react-table";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { ColumnDef, ColumnFiltersState, PaginationState, SortingState, VisibilityState, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
+import { useState } from "react";
 
-// Make the props generic using <TData, TValue>
 interface BudgetTableProps<TData, TValue> {
 	data: TData[];
-	totalItems: number;
 	columns: ColumnDef<TData, TValue>[];
 }
 
 export function BudgetTable<TData, TValue>({
-	data: initialData,
-	columns
+	data,
+	columns,
 }: BudgetTableProps<TData, TValue>) {
-	const [data, setData] = useState(initialData);
-	const router = useRouter();
+	const [sorting, setSorting] = useState<SortingState>([]);
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
 
-	// Update local state when server data changes
-	useEffect(() => {
-		setData(initialData);
-	}, [initialData]);
-
-	// Use simple data table hook for client-side rendering
-	const table = useSimpleDataTable({
+	const table = useReactTable({
 		data,
 		columns,
+		getCoreRowModel: getCoreRowModel(),
+		getFilteredRowModel: getFilteredRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		state: {
+			sorting,
+			columnFilters,
+			columnVisibility,
+			pagination
+		},
+		onSortingChange: setSorting,
+		onColumnFiltersChange: setColumnFilters,
+		onColumnVisibilityChange: setColumnVisibility,
+		onPaginationChange: setPagination,
 	});
 
 	return (
-		<DataTable table={table}>
+		<div className="flex flex-col gap-4">
 			<DataTableToolbar table={table} />
-		</DataTable>
+			<DataTable table={table} />
+		</div>
 	);
 }

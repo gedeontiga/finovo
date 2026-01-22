@@ -169,7 +169,7 @@ export default async function ProgramsPage() {
 						</div>
 					</CardHeader>
 					<CardContent className="p-0">
-						<BudgetTable columns={columns} data={data} totalItems={data.length} />
+						<BudgetTable columns={columns} data={data} />
 					</CardContent>
 				</Card>
 			</div>

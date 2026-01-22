@@ -223,6 +223,8 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		sortingFn: 'basic',
 		meta: {
 			label: "Budget Lines",
+			filterable: true,
+			filterVariant: "number",
 		},
 	},
 	{
@@ -245,6 +247,8 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		sortingFn: 'basic',
 		meta: {
 			label: "Auth (AE)",
+			filterable: true,
+			filterVariant: "text",
 		},
 	},
 	{
@@ -267,6 +271,8 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		sortingFn: 'basic',
 		meta: {
 			label: "Engaged",
+			filterable: true,
+			filterVariant: "text",
 		},
 	},
 	{
@@ -296,6 +302,8 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		sortingFn: 'basic',
 		meta: {
 			label: "Execution",
+			filterable: true,
+			filterVariant: "number",
 		},
 	},
 	{
