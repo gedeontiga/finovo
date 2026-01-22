@@ -1,9 +1,20 @@
-'use client';
+"use client";
 
 import { DataTable } from "@/components/ui/table/data-table";
 import { DataTableToolbar } from "@/components/ui/table/data-table-toolbar";
-import { ColumnDef, ColumnFiltersState, PaginationState, SortingState, VisibilityState, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
-import { useState, useCallback } from "react";
+import {
+	ColumnDef,
+	ColumnFiltersState,
+	PaginationState,
+	SortingState,
+	VisibilityState,
+	getCoreRowModel,
+	getFilteredRowModel,
+	getPaginationRowModel,
+	getSortedRowModel,
+	useReactTable,
+} from "@tanstack/react-table";
+import { useState, useCallback, useMemo } from "react";
 
 interface EnhancedDataTableProps<TData, TValue> {
 	data: TData[];
@@ -35,9 +46,13 @@ export function EnhancedDataTable<TData, TValue>({
 		pageSize: defaultPageSize,
 	});
 
+	// Memoize data and columns to prevent unnecessary re-renders
+	const memoizedData = useMemo(() => data, [data]);
+	const memoizedColumns = useMemo(() => columns, [columns]);
+
 	const table = useReactTable({
-		data,
-		columns,
+		data: memoizedData,
+		columns: memoizedColumns,
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -63,7 +78,8 @@ export function EnhancedDataTable<TData, TValue>({
 			target.closest('button') ||
 			target.closest('input') ||
 			target.closest('[role="checkbox"]') ||
-			target.closest('.delete-trigger')
+			target.closest('.delete-trigger') ||
+			target.closest('[data-radix-collection-item]')
 		) {
 			return;
 		}
@@ -71,7 +87,7 @@ export function EnhancedDataTable<TData, TValue>({
 	}, [onRowClick]);
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-4 w-full">
 			<DataTableToolbar
 				table={table}
 				searchKey={searchKey}

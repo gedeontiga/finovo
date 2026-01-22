@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formatCurrency = (value: number) =>
 	new Intl.NumberFormat("fr-FR", {
@@ -96,128 +97,86 @@ export function BudgetTable({ data }: EnhancedBudgetTableProps) {
 			/>
 
 			<Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-				<DialogContent className="sm:max-w-150">
-					<DialogHeader>
+				<DialogContent className="w-[95vw] max-w-2xl p-0 overflow-hidden">
+					<DialogHeader className="p-6 pb-2">
 						<DialogTitle>Edit Budget Line</DialogTitle>
 					</DialogHeader>
-					{selectedRow && (
-						<div className="grid gap-4 py-4">
-							{/* Read-only information */}
-							<div className="grid grid-cols-4 items-center gap-4">
-								<Label className="text-right font-semibold">Program</Label>
-								<div className="col-span-3">
-									<span className="font-mono text-xs font-semibold">
-										{selectedRow.program}
-									</span>
-									<p className="text-sm text-muted-foreground">
-										{selectedRow.programName}
-									</p>
-								</div>
-							</div>
+					<ScrollArea className="max-h-[70vh] px-6">
+						{selectedRow && (
+							<div className="grid gap-6 py-4">
+								{/* Read-only information */}
+								<div className="space-y-4 rounded-lg bg-muted/50 p-4 border text-sm">
+									<div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
+										<Label className="font-semibold text-muted-foreground">Program</Label>
+										<div className="sm:col-span-3">
+											<span className="font-mono font-semibold mr-2">{selectedRow.program}</span>
+											<span>{selectedRow.programName}</span>
+										</div>
+									</div>
 
-							<div className="grid grid-cols-4 items-center gap-4">
-								<Label className="text-right font-semibold">Action</Label>
-								<div className="col-span-3">
-									<span className="font-mono text-xs font-semibold">
-										{selectedRow.action}
-									</span>
-									<p className="text-sm text-muted-foreground">
-										{selectedRow.actionName}
-									</p>
-								</div>
-							</div>
+									<div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
+										<Label className="font-semibold text-muted-foreground">Action</Label>
+										<div className="sm:col-span-3">
+											<span className="font-mono font-semibold mr-2">{selectedRow.action}</span>
+											<span>{selectedRow.actionName}</span>
+										</div>
+									</div>
 
-							<div className="grid grid-cols-4 items-center gap-4">
-								<Label className="text-right font-semibold">Activity</Label>
-								<div className="col-span-3">
-									<span className="font-mono text-xs font-semibold">
-										{selectedRow.activity}
-									</span>
-									<p className="text-sm text-muted-foreground">
-										{selectedRow.activityName}
-									</p>
-								</div>
-							</div>
+									<div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
+										<Label className="font-semibold text-muted-foreground">Activity</Label>
+										<div className="sm:col-span-3">
+											<span className="font-mono font-semibold mr-2">{selectedRow.activity}</span>
+											<span>{selectedRow.activityName}</span>
+										</div>
+									</div>
 
-							{selectedRow.taskName && (
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label className="text-right font-semibold">Task</Label>
-									<div className="col-span-3">
-										<p className="text-sm">{selectedRow.taskName}</p>
+									<div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
+										<Label className="font-semibold text-muted-foreground">Paragraph</Label>
+										<div className="sm:col-span-3">
+											<span className="font-mono font-bold text-primary mr-2">{selectedRow.paragraph}</span>
+											<span>{selectedRow.paragraphName}</span>
+										</div>
 									</div>
 								</div>
-							)}
 
-							<div className="grid grid-cols-4 items-center gap-4">
-								<Label className="text-right font-semibold">Paragraph</Label>
-								<div className="col-span-3">
-									<span className="font-mono text-xs font-bold text-primary">
-										{selectedRow.paragraph}
-									</span>
-									<p className="text-xs text-muted-foreground">
-										{selectedRow.paragraphName}
-									</p>
-								</div>
-							</div>
-
-							{selectedRow.adminCode && (
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label className="text-right font-semibold">Admin Unit</Label>
-									<div className="col-span-3">
-										<span className="font-mono text-xs font-semibold">
-											{selectedRow.adminCode}
-										</span>
-										<p className="text-sm text-muted-foreground">
-											{selectedRow.adminName}
-										</p>
+								{/* Editable Fields */}
+								<div className="space-y-4">
+									<div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+										<Label htmlFor="ae" className="sm:text-right">Authorized (AE)</Label>
+										<Input
+											id="ae"
+											type="number"
+											value={ae}
+											onChange={(e) => setAe(Number(e.target.value))}
+											className="sm:col-span-3 font-mono"
+										/>
+									</div>
+									<div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+										<Label htmlFor="cp" className="sm:text-right">Credits (CP)</Label>
+										<Input
+											id="cp"
+											type="number"
+											value={cp}
+											onChange={(e) => setCp(Number(e.target.value))}
+											className="sm:col-span-3 font-mono"
+										/>
+									</div>
+									<div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+										<Label htmlFor="engaged" className="sm:text-right">Engaged</Label>
+										<Input
+											id="engaged"
+											type="number"
+											value={engaged}
+											onChange={(e) => setEngaged(Number(e.target.value))}
+											className="sm:col-span-3 font-mono"
+										/>
 									</div>
 								</div>
-							)}
 
-							<div className="border-t pt-4 space-y-4">
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label htmlFor="ae" className="text-right">
-										AE (Authorized)
-									</Label>
-									<Input
-										id="ae"
-										type="number"
-										value={ae}
-										onChange={(e) => setAe(Number(e.target.value))}
-										className="col-span-3 font-mono"
-									/>
-								</div>
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label htmlFor="cp" className="text-right">
-										CP (Credits)
-									</Label>
-									<Input
-										id="cp"
-										type="number"
-										value={cp}
-										onChange={(e) => setCp(Number(e.target.value))}
-										className="col-span-3 font-mono"
-									/>
-								</div>
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label htmlFor="engaged" className="text-right">
-										Engaged
-									</Label>
-									<Input
-										id="engaged"
-										type="number"
-										value={engaged}
-										onChange={(e) => setEngaged(Number(e.target.value))}
-										className="col-span-3 font-mono"
-									/>
-								</div>
-							</div>
-
-							{/* Calculated values */}
-							<div className="border-t pt-4 space-y-3 bg-muted/30 p-4 rounded-lg">
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-muted-foreground">Execution Rate:</span>
+								{/* Calculated values */}
+								<div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-muted/30 p-4 rounded-lg border">
 									<div className="flex items-center gap-2">
+										<span className="text-sm text-muted-foreground">Execution Rate:</span>
 										<Badge
 											variant={executionRate > 95 ? "destructive" : executionRate > 90 ? "default" : "secondary"}
 											className="font-mono"
@@ -225,17 +184,17 @@ export function BudgetTable({ data }: EnhancedBudgetTableProps) {
 											{executionRate.toFixed(2)}%
 										</Badge>
 									</div>
-								</div>
-								<div className="flex justify-between items-center">
-									<span className="text-sm text-muted-foreground">Available (Disponible):</span>
-									<span className="font-mono font-semibold text-sm">
-										{formatCurrency(disponible)} XAF
-									</span>
+									<div className="flex items-center gap-2">
+										<span className="text-sm text-muted-foreground">Available:</span>
+										<span className="font-mono font-semibold text-sm">
+											{formatCurrency(disponible)} XAF
+										</span>
+									</div>
 								</div>
 							</div>
-						</div>
-					)}
-					<DialogFooter>
+						)}
+					</ScrollArea>
+					<DialogFooter className="p-6 pt-2 border-t mt-auto">
 						<Button variant="outline" onClick={() => setEditDialogOpen(false)}>
 							Cancel
 						</Button>

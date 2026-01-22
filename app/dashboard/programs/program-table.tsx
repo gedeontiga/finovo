@@ -16,6 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EnhancedProgramsTableProps {
 	data: ProgramRow[];
@@ -79,37 +80,39 @@ export function ProgramsTable({ data }: EnhancedProgramsTableProps) {
 			/>
 
 			<Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
+				<DialogContent className="w-[95vw] max-w-lg p-0 overflow-hidden">
+					<DialogHeader className="p-6 pb-2">
 						<DialogTitle>Edit Program</DialogTitle>
 					</DialogHeader>
-					<div className="grid gap-4 py-4">
-						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="code" className="text-right">
-								Code
-							</Label>
-							<Input
-								id="code"
-								value={code}
-								onChange={(e) => setCode(e.target.value)}
-								className="col-span-3 font-mono"
-								placeholder="e.g., P001"
-							/>
+					<ScrollArea className="max-h-[60vh] px-6">
+						<div className="grid gap-4 py-4">
+							<div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+								<Label htmlFor="code" className="sm:text-right font-semibold">
+									Code
+								</Label>
+								<Input
+									id="code"
+									value={code}
+									onChange={(e) => setCode(e.target.value)}
+									className="sm:col-span-3 font-mono"
+									placeholder="e.g., P001"
+								/>
+							</div>
+							<div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
+								<Label htmlFor="name" className="sm:text-right font-semibold">
+									Name
+								</Label>
+								<Input
+									id="name"
+									value={name}
+									onChange={(e) => setName(e.target.value)}
+									className="sm:col-span-3"
+									placeholder="Program name"
+								/>
+							</div>
 						</div>
-						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="name" className="text-right">
-								Name
-							</Label>
-							<Input
-								id="name"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								className="col-span-3"
-								placeholder="Program name"
-							/>
-						</div>
-					</div>
-					<DialogFooter>
+					</ScrollArea>
+					<DialogFooter className="p-6 pt-2 border-t mt-auto">
 						<Button variant="outline" onClick={() => setEditDialogOpen(false)}>
 							Cancel
 						</Button>

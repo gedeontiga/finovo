@@ -38,27 +38,19 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			const program = row.original.program;
 			const programName = row.original.programName;
 			return (
-				<div className="space-y-1 min-w-32">
+				<div className="space-y-1 min-w-35">
 					<span className="font-mono text-xs font-semibold block">
 						{program || "-"}
 					</span>
-					<p
-						className="text-xs text-muted-foreground truncate max-w-32"
-						title={programName || ""}
-					>
+					<p className="text-xs text-muted-foreground truncate max-w-45" title={programName || ""}>
 						{programName}
 					</p>
 				</div>
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
 		filterFn: 'includesString',
-		meta: {
-			label: "Program",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
+		meta: { label: "Program" },
 	},
 	{
 		accessorKey: "action",
@@ -67,27 +59,19 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			const action = row.original.action;
 			const actionName = row.original.actionName;
 			return (
-				<div className="space-y-1 min-w-32">
+				<div className="space-y-1 min-w-35">
 					<span className="font-mono text-xs font-semibold block">
 						{action || "-"}
 					</span>
-					<p
-						className="text-xs text-muted-foreground truncate max-w-32"
-						title={actionName || ""}
-					>
+					<p className="text-xs text-muted-foreground truncate max-w-45" title={actionName || ""}>
 						{actionName}
 					</p>
 				</div>
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
 		filterFn: 'includesString',
-		meta: {
-			label: "Action",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
+		meta: { label: "Action" },
 	},
 	{
 		accessorKey: "activity",
@@ -100,48 +84,15 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 					<span className="font-mono text-xs font-semibold block">
 						{activity || "-"}
 					</span>
-					<p
-						className="text-xs text-muted-foreground truncate max-w-37.5"
-						title={activityName || ""}
-					>
+					<p className="text-xs text-muted-foreground truncate max-w-50" title={activityName || ""}>
 						{activityName}
 					</p>
 				</div>
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
 		filterFn: 'includesString',
-		meta: {
-			label: "Activity",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
-	},
-	{
-		accessorKey: "taskName",
-		header: ({ column }) => <DataTableColumnHeader column={column} title="Task" />,
-		cell: ({ row }) => {
-			const taskName = row.original.taskName;
-			return (
-				<div className="min-w-32">
-					<p
-						className="text-xs truncate max-w-32"
-						title={taskName || ""}
-					>
-						{taskName || "-"}
-					</p>
-				</div>
-			);
-		},
-		enableSorting: true,
-		enableColumnFilter: true,
-		filterFn: 'includesString',
-		meta: {
-			label: "Task",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
+		meta: { label: "Activity" },
 	},
 	{
 		accessorKey: "adminCode",
@@ -149,31 +100,19 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		cell: ({ row }) => {
 			const code = row.original.adminCode;
 			const name = row.original.adminName;
-			if (!code) {
-				return (
-					<span className="text-xs text-muted-foreground min-w-25 block">-</span>
-				);
-			}
+			if (!code) return <span className="text-xs text-muted-foreground block min-w-30">-</span>;
 			return (
-				<div className="space-y-1 min-w-25">
+				<div className="space-y-1 min-w-30">
 					<span className="font-mono text-xs font-semibold block">{code}</span>
-					<p
-						className="text-xs text-muted-foreground truncate max-w-25"
-						title={name || ""}
-					>
+					<p className="text-xs text-muted-foreground truncate max-w-37.5" title={name || ""}>
 						{name}
 					</p>
 				</div>
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
 		filterFn: 'includesString',
-		meta: {
-			label: "Admin Unit",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
+		meta: { label: "Admin" },
 	},
 	{
 		accessorKey: "paragraph",
@@ -186,106 +125,46 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 					<span className="font-mono text-xs font-bold text-primary block">
 						{paragraph}
 					</span>
-					<p
-						className="text-xs text-muted-foreground truncate max-w-50"
-						title={paragraphName}
-					>
+					<p className="text-xs text-muted-foreground truncate max-w-62.5" title={paragraphName}>
 						{paragraphName}
 					</p>
 				</div>
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
 		filterFn: 'includesString',
-		meta: {
-			label: "Paragraph",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
+		meta: { label: "Paragraph" },
 	},
 	{
 		accessorKey: "ae",
-		header: ({ column }) => (
-			<div className="text-right">
-				<DataTableColumnHeader column={column} title="AE" />
+		header: ({ column }) => <div className="text-right min-w-25"><DataTableColumnHeader column={column} title="AE" /></div>,
+		cell: ({ row }) => (
+			<div className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold min-w-25">
+				{formatCurrency(row.original.ae)}
 			</div>
 		),
-		cell: ({ row }) => {
-			const value = row.original.ae;
-			return (
-				<div className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold min-w-25">
-					{formatCurrency(value)}
-				</div>
-			);
-		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "AE (Authorized)",
-		},
-	},
-	{
-		accessorKey: "cp",
-		header: ({ column }) => (
-			<div className="text-right">
-				<DataTableColumnHeader column={column} title="CP" />
-			</div>
-		),
-		cell: ({ row }) => {
-			const value = row.original.cp;
-			return (
-				<div className="text-right font-mono text-xs text-purple-600 dark:text-purple-400 min-w-25">
-					{formatCurrency(value)}
-				</div>
-			);
-		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "CP (Credits)",
-		},
+		meta: { label: "AE" },
 	},
 	{
 		accessorKey: "engaged",
-		header: ({ column }) => (
-			<div className="text-right">
-				<DataTableColumnHeader column={column} title="Engaged" />
-			</div>
-		),
+		header: ({ column }) => <div className="text-right min-w-30"><DataTableColumnHeader column={column} title="Engaged" /></div>,
 		cell: ({ row }) => {
 			const val = row.original.engaged;
 			const ae = row.original.ae;
 			const ratio = ae > 0 ? (val / ae) * 100 : 0;
-			const disponible = ae - val;
 
 			return (
 				<div className="flex flex-col items-end space-y-1 min-w-30">
-					<span className="font-mono text-xs font-semibold">
-						{formatCurrency(val)}
-					</span>
+					<span className="font-mono text-xs font-semibold">{formatCurrency(val)}</span>
 					<Badge
 						variant={ratio > 95 ? "destructive" : "secondary"}
-						className={cn(
-							"text-[10px] px-1.5 py-0",
-							ratio > 90 && ratio <= 95 && "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-						)}
+						className={cn("text-[10px] px-1.5 py-0", ratio > 90 && ratio <= 95 && "bg-amber-500/10 text-amber-700")}
 					>
 						{ratio.toFixed(1)}%
 					</Badge>
-					<span className="text-[10px] text-muted-foreground">
-						Disp: {formatCurrency(disponible)}
-					</span>
 				</div>
 			);
 		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "Engaged",
-		},
+		meta: { label: "Engaged" },
 	},
 ];

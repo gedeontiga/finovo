@@ -29,19 +29,14 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		cell: ({ row }) => {
 			const code = row.original.code;
 			return (
-				<span className="font-bold font-mono text-primary min-w-15 block">
+				<span className="font-bold font-mono text-primary min-w-20 block">
 					{code}
 				</span>
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
 		filterFn: "includesString",
-		meta: {
-			label: "Code",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
+		meta: { label: "Code" },
 	},
 	{
 		accessorKey: "name",
@@ -49,46 +44,36 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		cell: ({ row }) => {
 			const name = row.original.name;
 			return (
-				<span className="text-sm min-w-50 block" title={name}>
+				<span className="text-sm min-w-50 block truncate" title={name}>
 					{name}
 				</span>
 			);
 		},
 		enableSorting: true,
-		enableColumnFilter: true,
 		filterFn: "includesString",
-		meta: {
-			label: "Program Name",
-			filterable: true,
-			filterVariant: "text" as const,
-		},
+		meta: { label: "Program Name" },
 	},
 	{
 		accessorKey: "activitiesCount",
 		header: ({ column }) => (
-			<div className="text-center">
-				<DataTableColumnHeader column={column} title="Budget Lines" />
+			<div className="text-center min-w-25">
+				<DataTableColumnHeader column={column} title="Lines" />
 			</div>
 		),
 		cell: ({ row }) => {
 			const count = row.original.activitiesCount;
 			return (
-				<span className="text-muted-foreground text-sm min-w-15 block text-center font-semibold">
+				<span className="text-muted-foreground text-sm min-w-25 block text-center font-semibold">
 					{count}
 				</span>
 			);
 		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "Budget Lines",
-		},
+		meta: { label: "Budget Lines" },
 	},
 	{
 		accessorKey: "ae",
 		header: ({ column }) => (
-			<div className="text-right">
+			<div className="text-right min-w-30">
 				<DataTableColumnHeader column={column} title="Auth (AE)" />
 			</div>
 		),
@@ -100,17 +85,12 @@ export const columns: ColumnDef<ProgramRow>[] = [
 				</div>
 			);
 		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "Auth (AE)",
-		},
+		meta: { label: "Auth (AE)" },
 	},
 	{
 		accessorKey: "cp",
 		header: ({ column }) => (
-			<div className="text-right">
+			<div className="text-right min-w-30">
 				<DataTableColumnHeader column={column} title="CP" />
 			</div>
 		),
@@ -122,17 +102,12 @@ export const columns: ColumnDef<ProgramRow>[] = [
 				</div>
 			);
 		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "CP (Credits)",
-		},
+		meta: { label: "CP (Credits)" },
 	},
 	{
 		accessorKey: "engaged",
 		header: ({ column }) => (
-			<div className="text-right">
+			<div className="text-right min-w-30">
 				<DataTableColumnHeader column={column} title="Engaged" />
 			</div>
 		),
@@ -144,22 +119,17 @@ export const columns: ColumnDef<ProgramRow>[] = [
 				</div>
 			);
 		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "Engaged",
-		},
+		meta: { label: "Engaged" },
 	},
 	{
 		accessorKey: "executionRate",
-		header: ({ column }) => <DataTableColumnHeader column={column} title="Execution" />,
+		header: ({ column }) => <div className="min-w-37.5"><DataTableColumnHeader column={column} title="Execution" /></div>,
 		cell: ({ row }) => {
 			const rate = row.original.executionRate;
 			const disponible = row.original.ae - row.original.engaged;
 
 			return (
-				<div className="min-w-32 space-y-2">
+				<div className="min-w-37.5 space-y-2">
 					<div className="flex justify-between text-xs mb-1.5">
 						<span className={cn(
 							"font-semibold",
@@ -185,11 +155,6 @@ export const columns: ColumnDef<ProgramRow>[] = [
 				</div>
 			);
 		},
-		enableSorting: true,
-		enableColumnFilter: false,
-		sortingFn: 'basic',
-		meta: {
-			label: "Execution",
-		},
+		meta: { label: "Execution" },
 	},
 ];
