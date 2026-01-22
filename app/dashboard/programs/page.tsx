@@ -8,11 +8,10 @@ import {
 	budgetLines
 } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
-import { BudgetTable } from "../budget/budget-table";
-import { columns } from "./columns";
 import { CreateProgramForm } from "@/views/dashboard/programs/create-program-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { IconApps, IconChartBar, IconCurrencyDollar, IconPercentage } from "@tabler/icons-react";
+import { ProgramsTable } from "./program-table";
 
 export default async function ProgramsPage() {
 	const rows = await db
@@ -169,7 +168,7 @@ export default async function ProgramsPage() {
 						</div>
 					</CardHeader>
 					<CardContent className="p-0">
-						<BudgetTable columns={columns} data={data} />
+						<ProgramsTable data={data} />
 					</CardContent>
 				</Card>
 			</div>

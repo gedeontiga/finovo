@@ -1,5 +1,4 @@
 import PageContainer from "@/components/layout/page-container";
-import { columns } from "./columns";
 import { db } from "@/db";
 import {
 	budgetLines,
@@ -15,7 +14,7 @@ import { BudgetUploader } from "@/views/dashboard/budget/budget-upload-button";
 import { CreateBudgetForm } from "@/views/dashboard/budget/create-budget-form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BudgetTable } from "./budget-table";
-import { IconDatabase, IconFileSpreadsheet } from "@tabler/icons-react";
+import { IconDatabase, IconFileSpreadsheet, IconTrendingUp, IconAlertTriangle } from "@tabler/icons-react";
 
 export default async function BudgetPage() {
 	const allData = await db
@@ -27,7 +26,7 @@ export default async function BudgetPage() {
 			actionName: actions.name,
 			activity: activities.code,
 			activityName: activities.name,
-			taskName: tasks.name, // Added task name for context
+			taskName: tasks.name,
 			adminCode: adminUnits.code,
 			adminName: adminUnits.name,
 			paragraph: budgetLines.paragraphCode,
@@ -37,8 +36,8 @@ export default async function BudgetPage() {
 			engaged: budgetLines.engaged,
 		})
 		.from(budgetLines)
-		.innerJoin(tasks, eq(budgetLines.taskId, tasks.id)) // 1. Join Task using taskId
-		.innerJoin(activities, eq(tasks.activityId, activities.id)) // 2. Join Activity using task.activityId
+		.innerJoin(tasks, eq(budgetLines.taskId, tasks.id))
+		.innerJoin(activities, eq(tasks.activityId, activities.id))
 		.innerJoin(actions, eq(activities.actionId, actions.id))
 		.innerJoin(programs, eq(actions.programId, programs.id))
 		.leftJoin(adminUnits, eq(budgetLines.adminUnitId, adminUnits.id))
@@ -59,8 +58,10 @@ export default async function BudgetPage() {
 	});
 
 	const totalAE = data.reduce((sum, item) => sum + item.ae, 0);
+	const totalCP = data.reduce((sum, item) => sum + item.cp, 0);
 	const totalEngaged = data.reduce((sum, item) => sum + item.engaged, 0);
 	const avgExecutionRate = totalAE > 0 ? (totalEngaged / totalAE) * 100 : 0;
+	const highRiskLines = data.filter(item => item.executionRate > 90).length;
 
 	const formOptions = await getFormOptions();
 
@@ -75,16 +76,16 @@ export default async function BudgetPage() {
 		<PageContainer>
 			<div className="flex flex-col space-y-6">
 				{/* Header */}
-				<div className="flex items-start justify-between">
+				<div className="flex flex-col sm:flex-row items-start justify-between gap-4">
 					<div>
 						<h2 className="text-3xl font-bold tracking-tight bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
 							Budget Management
 						</h2>
 						<p className="text-muted-foreground text-sm mt-1">
-							Manage your budget lines and allocations
+							Manage budget lines with advanced filtering and sorting
 						</p>
 					</div>
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 w-full sm:w-auto">
 						<CreateBudgetForm
 							programs={formOptions.programs}
 							actions={formOptions.actions}
@@ -96,7 +97,7 @@ export default async function BudgetPage() {
 				</div>
 
 				{/* Summary Cards */}
-				<div className="grid gap-4 md:grid-cols-4">
+				<div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
 					<Card className="border-border/50 hover:shadow-md transition-shadow">
 						<CardHeader className="pb-3">
 							<CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -124,15 +125,15 @@ export default async function BudgetPage() {
 								{formatCompact(totalAE)} XAF
 							</div>
 							<p className="text-xs text-muted-foreground mt-1">
-								Authorized envelope
+								CP: {formatCompact(totalCP)} XAF
 							</p>
 						</CardContent>
 					</Card>
 
 					<Card className="border-border/50 hover:shadow-md transition-shadow">
 						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium text-muted-foreground">
-								Total Engaged
+							<CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+								<IconTrendingUp className="h-4 w-4" /> Engaged
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
@@ -140,26 +141,23 @@ export default async function BudgetPage() {
 								{formatCompact(totalEngaged)} XAF
 							</div>
 							<p className="text-xs text-muted-foreground mt-1">
-								Currently committed
+								{avgExecutionRate.toFixed(1)}% execution rate
 							</p>
 						</CardContent>
 					</Card>
 
 					<Card className="border-border/50 hover:shadow-md transition-shadow">
 						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium text-muted-foreground">
-								Avg Execution
+							<CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+								<IconAlertTriangle className="h-4 w-4" /> High Risk
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<div className={`text-2xl font-bold tabular-nums ${avgExecutionRate > 90 ? 'text-red-600 dark:text-red-400' :
-								avgExecutionRate > 70 ? 'text-amber-600 dark:text-amber-400' :
-									'text-green-600 dark:text-green-400'
-								}`}>
-								{avgExecutionRate.toFixed(1)}%
+							<div className={`text-2xl font-bold tabular-nums ${highRiskLines > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+								{highRiskLines}
 							</div>
 							<p className="text-xs text-muted-foreground mt-1">
-								Average rate
+								Lines over 90% execution
 							</p>
 						</CardContent>
 					</Card>
@@ -174,13 +172,13 @@ export default async function BudgetPage() {
 									<IconFileSpreadsheet className="h-5 w-5 text-primary" /> Budget Lines Database
 								</CardTitle>
 								<CardDescription className="mt-1">
-									Complete list of all budget allocations and their execution status
+									Click on any row to edit • Hover over row number to delete • Swipe left on mobile
 								</CardDescription>
 							</div>
 						</div>
 					</CardHeader>
-					<CardContent className="p-0">
-						<BudgetTable columns={columns} data={data} />
+					<CardContent className="p-6">
+						<BudgetTable data={data} />
 					</CardContent>
 				</Card>
 			</div>
