@@ -1,5 +1,5 @@
 import { getBudgetByProgram } from "@/actions/dashboard-analytics";
-import { BarGraph } from "@/views/dashboard/overview/components/bar-graph";
+import { BarGraph } from "@/views/dashboard/overview/bar-graph";
 
 export default async function BarStatsPage() {
   const data = await getBudgetByProgram();

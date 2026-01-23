@@ -6,7 +6,6 @@ import { Progress } from '@/components/ui/progress';
 import { APP_TEXTS } from '@/lib/constants';
 
 export default async function OverviewLayout({
-  children,
   bar_stats
 }: {
   children: React.ReactNode;
@@ -16,7 +15,7 @@ export default async function OverviewLayout({
 
   const fmt = (n: number) => new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'XAF',
+    currency: 'FCFA',
     maximumSignificantDigits: 3
   }).format(n);
 
@@ -54,7 +53,7 @@ export default async function OverviewLayout({
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums'>
-                {fmtCompact(stats.ae)} XAF
+                {fmtCompact(stats.ae)} FCFA
               </div>
               <p className='text-xs text-muted-foreground mt-1'>
                 {APP_TEXTS.dashboard.overview.ae.description}
@@ -75,7 +74,7 @@ export default async function OverviewLayout({
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold text-purple-600 dark:text-purple-400 tabular-nums'>
-                {fmtCompact(stats.cp)} XAF
+                {fmtCompact(stats.cp)} FCFA
               </div>
               <p className='text-xs text-muted-foreground mt-1'>
                 {APP_TEXTS.dashboard.overview.cp.description}
@@ -128,7 +127,7 @@ export default async function OverviewLayout({
                   }`}
               />
               <p className='text-xs text-muted-foreground mt-2'>
-                {fmtCompact(stats.disponible)} XAF available
+                {fmtCompact(stats.disponible)} FCFA available
               </p>
             </CardContent>
           </Card>

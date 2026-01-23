@@ -88,7 +88,7 @@ export function BarGraph({ data }: BarGraphProps) {
                 {chartConfig[key].label}
               </span>
               <span className='text-lg font-bold leading-none sm:text-3xl tabular-nums'>
-                {formatCurrency(total[key])} XAF
+                {formatCurrency(total[key])} FCFA
               </span>
             </button>
           ))}
@@ -148,7 +148,7 @@ export function BarGraph({ data }: BarGraphProps) {
                     const item = payload?.[0]?.payload;
                     return item ? `Program ${value}: ${item.name}` : value;
                   }}
-                  formatter={(value) => formatCurrency(Number(value)) + ' XAF'}
+                  formatter={(value) => formatCurrency(Number(value)) + ' FCFA'}
                 />
               }
             />

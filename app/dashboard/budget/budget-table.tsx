@@ -184,7 +184,7 @@ export function BudgetTable({ data }: BudgetTableProps) {
 									<div className="flex items-center gap-2">
 										<span className="text-sm text-muted-foreground">Available:</span>
 										<span className="font-mono font-semibold text-sm">
-											{formatCurrency(disponible)} XAF
+											{formatCurrency(disponible)} FCFA
 										</span>
 									</div>
 								</div>
