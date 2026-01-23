@@ -39,7 +39,9 @@ export function EnhancedDataTable<TData, TValue>({
 }: EnhancedDataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+		globalSearch: false, // Explicitly hide global search column
+	});
 	const [rowSelection, setRowSelection] = useState({});
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -66,6 +68,9 @@ export function EnhancedDataTable<TData, TValue>({
 			rowSelection,
 			pagination,
 		},
+		// Ensure manual pagination state updates are respected
+		manualPagination: false,
+		pageCount: Math.ceil(data.length / pagination.pageSize),
 	});
 
 	const handleRowClick = (row: TData, e: React.MouseEvent) => {
@@ -87,7 +92,6 @@ export function EnhancedDataTable<TData, TValue>({
 			<DataTableToolbar
 				table={table}
 				searchKey={searchKey}
-				pageSizeOptions={pageSizeOptions}
 			/>
 			<DataTable
 				table={table}

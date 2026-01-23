@@ -30,6 +30,11 @@ const formatCurrency = (value: number) =>
 		maximumFractionDigits: 0,
 	}).format(value);
 
+// Helper function to safely get string value
+const safeString = (value: string | null | undefined, fallback: string = "-"): string => {
+	return value ?? fallback;
+};
+
 // Global search filter - searches across all text fields
 const globalFilterFn = (row: any, columnId: string, filterValue: string) => {
 	const search = String(filterValue).toLowerCase();
@@ -61,23 +66,23 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 	{
 		id: "globalSearch",
 		accessorFn: (row) =>
-			`${row.program} ${row.programName} ${row.action} ${row.actionName} ${row.activity} ${row.activityName} ${row.taskName} ${row.adminCode} ${row.adminName} ${row.paragraph} ${row.paragraphName} ${row.ae} ${row.cp} ${row.engaged}`,
+			`${safeString(row.program)} ${safeString(row.programName)} ${safeString(row.action)} ${safeString(row.actionName)} ${safeString(row.activity)} ${safeString(row.activityName)} ${safeString(row.taskName)} ${safeString(row.adminCode)} ${safeString(row.adminName)} ${safeString(row.paragraph)} ${safeString(row.paragraphName)} ${row.ae} ${row.cp} ${row.engaged}`,
 		filterFn: globalFilterFn,
-		enableHiding: false, // Cannot be hidden/shown
+		enableHiding: false,
 		enableSorting: false,
 	},
 	{
 		accessorKey: "program",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Program" />,
 		cell: ({ row }) => {
-			const program = row.original.program ?? "-";
-			const programName = row.original.programName ?? "-";
+			const program = safeString(row.original.program);
+			const programName = safeString(row.original.programName);
 			return (
 				<div className="space-y-1 min-w-35 max-w-50">
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{program}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-word" title={programName}>
+					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={programName}>
 						{programName}
 					</p>
 				</div>
@@ -91,14 +96,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		accessorKey: "action",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Action" />,
 		cell: ({ row }) => {
-			const action = row.original.action ?? "-";
-			const actionName = row.original.actionName ?? "-";
+			const action = safeString(row.original.action);
+			const actionName = safeString(row.original.actionName);
 			return (
 				<div className="space-y-1 min-w-35 max-w-50">
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{action}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-word" title={actionName}>
+					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={actionName}>
 						{actionName}
 					</p>
 				</div>
@@ -112,14 +117,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		accessorKey: "activity",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Activity" />,
 		cell: ({ row }) => {
-			const activity = row.original.activity ?? "-";
-			const activityName = row.original.activityName ?? "-";
+			const activity = safeString(row.original.activity);
+			const activityName = safeString(row.original.activityName);
 			return (
 				<div className="space-y-1 min-w-37.5 max-w-55">
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{activity}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-word" title={activityName}>
+					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={activityName}>
 						{activityName}
 					</p>
 				</div>
@@ -133,14 +138,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		accessorKey: "adminCode",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Admin Unit" />,
 		cell: ({ row }) => {
-			const code = row.original.adminCode ?? "-";
-			const name = row.original.adminName ?? "-";
+			const code = safeString(row.original.adminCode);
+			const name = safeString(row.original.adminName);
 			return (
 				<div className="space-y-1 min-w-30 max-w-45">
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{code}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-word" title={name}>
+					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={name}>
 						{name}
 					</p>
 				</div>
@@ -154,14 +159,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		accessorKey: "paragraph",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Paragraph" />,
 		cell: ({ row }) => {
-			const paragraph = row.original.paragraph;
-			const paragraphName = row.original.paragraphName;
+			const paragraph = safeString(row.original.paragraph);
+			const paragraphName = safeString(row.original.paragraphName);
 			return (
 				<div className="space-y-1 min-w-50 max-w-70">
 					<span className="font-mono text-xs font-bold text-primary block whitespace-nowrap">
 						{paragraph}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-word" title={paragraphName}>
+					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={paragraphName}>
 						{paragraphName}
 					</p>
 				</div>
@@ -180,7 +185,7 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		),
 		cell: ({ row }) => (
 			<div className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold min-w-25 whitespace-nowrap pr-4">
-				{formatCurrency(row.original.ae)}
+				{formatCurrency(row.original.ae || 0)}
 			</div>
 		),
 		enableHiding: true,
@@ -194,8 +199,8 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			</div>
 		),
 		cell: ({ row }) => {
-			const val = row.original.engaged;
-			const ae = row.original.ae;
+			const val = row.original.engaged || 0;
+			const ae = row.original.ae || 0;
 			const ratio = ae > 0 ? (val / ae) * 100 : 0;
 
 			return (

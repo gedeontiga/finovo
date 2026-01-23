@@ -44,16 +44,16 @@ export const columns: ColumnDef<ProgramRow>[] = [
 	// Hidden global search column
 	{
 		id: "globalSearch",
-		accessorFn: (row) => `${row.code} ${row.name} ${row.ae} ${row.cp} ${row.engaged}`,
+		accessorFn: (row) => `${row.code || ''} ${row.name || ''} ${row.ae || 0} ${row.cp || 0} ${row.engaged || 0}`,
 		filterFn: globalFilterFn,
-		enableHiding: false, // Cannot be hidden/shown
+		enableHiding: false,
 		enableSorting: false,
 	},
 	{
 		accessorKey: "code",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Code" />,
 		cell: ({ row }) => {
-			const code = row.original.code;
+			const code = row.original.code || "-";
 			return (
 				<span className="font-bold font-mono text-primary min-w-20 block whitespace-nowrap">
 					{code}
@@ -68,7 +68,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		accessorKey: "name",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Program Name" />,
 		cell: ({ row }) => {
-			const name = row.original.name;
+			const name = row.original.name || "-";
 			return (
 				<span className="text-sm min-w-50 max-w-75 block line-clamp-2 wrap-break-word" title={name}>
 					{name}
@@ -87,7 +87,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			</div>
 		),
 		cell: ({ row }) => {
-			const count = row.original.activitiesCount;
+			const count = row.original.activitiesCount || 0;
 			return (
 				<span className="text-muted-foreground text-sm min-w-25 block text-center font-semibold whitespace-nowrap">
 					{count}
@@ -105,7 +105,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			</div>
 		),
 		cell: ({ row }) => {
-			const value = row.original.ae;
+			const value = row.original.ae || 0;
 			return (
 				<div className="text-right font-mono text-sm min-w-30 text-blue-600 dark:text-blue-400 font-semibold whitespace-nowrap pr-4">
 					{formatCurrency(value)}
@@ -123,7 +123,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			</div>
 		),
 		cell: ({ row }) => {
-			const value = row.original.cp;
+			const value = row.original.cp || 0;
 			return (
 				<div className="text-right font-mono text-sm min-w-30 text-purple-600 dark:text-purple-400 whitespace-nowrap pr-4">
 					{formatCurrency(value)}
@@ -141,7 +141,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			</div>
 		),
 		cell: ({ row }) => {
-			const value = row.original.engaged;
+			const value = row.original.engaged || 0;
 			return (
 				<div className="text-right font-mono text-sm min-w-30 text-green-600 dark:text-green-400 font-semibold whitespace-nowrap pr-4">
 					{formatCurrency(value)}
@@ -159,8 +159,10 @@ export const columns: ColumnDef<ProgramRow>[] = [
 			</div>
 		),
 		cell: ({ row }) => {
-			const rate = row.original.executionRate;
-			const disponible = row.original.ae - row.original.engaged;
+			const rate = row.original.executionRate || 0;
+			const ae = row.original.ae || 0;
+			const engaged = row.original.engaged || 0;
+			const disponible = ae - engaged;
 
 			return (
 				<div className="min-w-37.5 max-w-50 space-y-2 pr-4">

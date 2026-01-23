@@ -2,30 +2,20 @@
 
 import type { Table } from '@tanstack/react-table';
 import * as React from 'react';
-import { DataTableViewOptions } from '@/components/ui/table/data-table-view-options';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { X, Search } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { IconFilter, IconFilterOff } from '@tabler/icons-react';
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<'div'> {
   table: Table<TData>;
   searchKey?: string;
-  pageSizeOptions?: number[];
 }
 
 export function DataTableToolbar<TData>({
   table,
   searchKey,
-  pageSizeOptions = [10, 20, 30, 50, 100],
   children,
   className,
   ...props
@@ -88,31 +78,7 @@ export function DataTableToolbar<TData>({
             </Button>
           )}
 
-          <div className='flex items-center gap-2'>
-            <span className='text-sm text-muted-foreground hidden md:inline whitespace-nowrap'>
-              Rows:
-            </span>
-            <Select
-              value={String(table.getState().pagination.pageSize)}
-              onValueChange={(value) => {
-                table.setPageSize(Number(value));
-              }}
-            >
-              <SelectTrigger className='h-9 w-17.5'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent side='top'>
-                {pageSizeOptions.map((size) => (
-                  <SelectItem key={size} value={String(size)}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {children}
-          <DataTableViewOptions table={table} />
         </div>
       </div>
 
