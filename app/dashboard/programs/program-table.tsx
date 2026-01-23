@@ -18,11 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface EnhancedProgramsTableProps {
+interface ProgramTableProps {
 	data: ProgramRow[];
 }
 
-export function ProgramsTable({ data }: EnhancedProgramsTableProps) {
+export function ProgramsTable({ data }: ProgramTableProps) {
 	const router = useRouter();
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [selectedRow, setSelectedRow] = useState<ProgramRow | null>(null);
@@ -74,9 +74,9 @@ export function ProgramsTable({ data }: EnhancedProgramsTableProps) {
 				columns={columns}
 				onRowClick={handleRowClick}
 				onRowDelete={handleRowDelete}
-				searchKey="name"
+				searchKey="globalSearch"
 				defaultPageSize={20}
-				pageSizeOptions={[10, 20, 30, 50]}
+				pageSizeOptions={[10, 20, 30, 50, 100]}
 			/>
 
 			<Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>

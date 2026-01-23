@@ -1,20 +1,10 @@
 "use client";
 
 import { type Table as TanstackTable, flexRender } from '@tanstack/react-table';
-import * as React from 'react';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { DataTablePagination } from '@/components/ui/table/data-table-pagination';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { IconTrash, IconGripVertical } from '@tabler/icons-react';
+import { IconTrash } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -27,13 +17,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface DataTableProps<TData> extends React.ComponentProps<'div'> {
+interface DataTableProps<TData> {
   table: TanstackTable<TData>;
   onRowClick?: (row: TData, e: React.MouseEvent) => void;
   onRowDelete?: (row: TData) => void;
 }
 
-// Separate component for swipeable row to isolate logic and performance
 function SwipeableTableRow<TData>({
   row,
   onRowClick,
@@ -46,11 +35,9 @@ function SwipeableTableRow<TData>({
   isMobile: boolean;
 }) {
   const rowRef = useRef<HTMLTableRowElement>(null);
-  const [offset, setOffset] = useState(0);
   const touchStart = useRef({ x: 0, y: 0 });
   const isSwiping = useRef(false);
   const isScrolling = useRef(false);
-  const SWIPE_THRESHOLD = 80;
   const DELETE_THRESHOLD = 100;
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -58,7 +45,6 @@ function SwipeableTableRow<TData>({
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     isSwiping.current = false;
     isScrolling.current = false;
-    // Reset transition for direct manipulation
     if (rowRef.current) {
       rowRef.current.style.transition = 'none';
     }
@@ -72,25 +58,19 @@ function SwipeableTableRow<TData>({
     const deltaX = currentX - touchStart.current.x;
     const deltaY = currentY - touchStart.current.y;
 
-    // Determine gesture direction once
     if (!isSwiping.current) {
       if (Math.abs(deltaY) > Math.abs(deltaX)) {
         isScrolling.current = true;
         return;
       }
-      if (Math.abs(deltaX) > 10 && deltaX < 0) { // Only swipe left
+      if (Math.abs(deltaX) > 10 && deltaX < 0) {
         isSwiping.current = true;
       }
     }
 
-    if (isSwiping.current) {
-      // Prevent scrolling while swiping
-      if (e.cancelable) e.preventDefault();
-
-      // Calculate new offset with resistance
+    if (isSwiping.current && e.cancelable) {
+      e.preventDefault();
       const newOffset = Math.min(0, Math.max(-150, deltaX));
-
-      // Direct DOM update for performance (no react render)
       if (rowRef.current) {
         rowRef.current.style.transform = `translateX(${newOffset}px)`;
       }
@@ -98,36 +78,28 @@ function SwipeableTableRow<TData>({
   };
 
   const handleTouchEnd = () => {
-    if (!isMobile || !onRowDelete) return;
+    if (!isMobile || !onRowDelete || !rowRef.current) return;
 
-    if (rowRef.current) {
-      rowRef.current.style.transition = 'transform 0.3s ease-out';
-      const currentTransform = new WebKitCSSMatrix(window.getComputedStyle(rowRef.current).transform).m41;
+    rowRef.current.style.transition = 'transform 0.3s ease-out';
+    const currentTransform = new WebKitCSSMatrix(
+      window.getComputedStyle(rowRef.current).transform
+    ).m41;
 
-      if (currentTransform < -DELETE_THRESHOLD) {
-        // Trigger delete confirm or state
-        onRowDelete(row.original);
-        rowRef.current.style.transform = 'translateX(0)';
-      } else if (currentTransform < -SWIPE_THRESHOLD / 2) {
-        // Maybe keep open? For now, snap back as we trigger delete dialog immediately
-        rowRef.current.style.transform = 'translateX(0)';
-      } else {
-        rowRef.current.style.transform = 'translateX(0)';
-      }
+    if (currentTransform < -DELETE_THRESHOLD) {
+      onRowDelete(row.original);
     }
-
-    setOffset(0);
+    rowRef.current.style.transform = 'translateX(0)';
     isSwiping.current = false;
     isScrolling.current = false;
   };
 
   return (
-    <TableRow
+    <tr
       ref={rowRef}
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
-        'group relative transition-colors duration-200',
-        onRowClick && 'cursor-pointer hover:bg-muted/50 active:bg-muted'
+        'group relative transition-colors duration-200 border-b hover:bg-muted/50 data-[state=selected]:bg-muted',
+        onRowClick && 'cursor-pointer active:bg-muted'
       )}
       onClick={(e) => onRowClick?.(row.original, e)}
       onTouchStart={handleTouchStart}
@@ -135,12 +107,12 @@ function SwipeableTableRow<TData>({
       onTouchEnd={handleTouchEnd}
     >
       {onRowDelete && (
-        <TableCell className='w-12 p-0 sticky left-0 bg-background z-10'>
+        <td className='w-12 p-0 sticky left-0 bg-background z-10 border-r'>
           <div className='flex items-center justify-center h-full'>
             <Button
               variant='ghost'
               size='icon'
-              className='h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100'
+              className='h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors'
               onClick={(e) => {
                 e.stopPropagation();
                 onRowDelete(row.original);
@@ -149,22 +121,14 @@ function SwipeableTableRow<TData>({
               <IconTrash className='h-4 w-4' />
             </Button>
           </div>
-        </TableCell>
+        </td>
       )}
-      {row.getVisibleCells().map((cell: any, cellIndex: number) => (
-        <TableCell
-          key={cell.id}
-          className={cn(
-            cellIndex === 0 && onRowDelete && 'sticky left-12 bg-background z-10'
-          )}
-        >
-          {flexRender(
-            cell.column.columnDef.cell,
-            cell.getContext()
-          )}
-        </TableCell>
+      {row.getVisibleCells().map((cell: any) => (
+        <td key={cell.id} className='p-2 align-middle'>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
       ))}
-    </TableRow>
+    </tr>
   );
 }
 
@@ -172,7 +136,6 @@ export function DataTable<TData>({
   table,
   onRowClick,
   onRowDelete,
-  className
 }: DataTableProps<TData>) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<TData | null>(null);
@@ -185,76 +148,77 @@ export function DataTable<TData>({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleDeleteRequest = useCallback((row: TData) => {
+  const handleDeleteRequest = (row: TData) => {
     setRowToDelete(row);
     setDeleteDialogOpen(true);
-  }, []);
+  };
 
-  const confirmDelete = useCallback(() => {
+  const confirmDelete = () => {
     if (rowToDelete && onRowDelete) {
       onRowDelete(rowToDelete);
     }
     setDeleteDialogOpen(false);
     setRowToDelete(null);
-  }, [rowToDelete, onRowDelete]);
+  };
 
   return (
     <>
-      <div className='flex flex-col space-y-4 w-full'>
-        <div className='rounded-md border bg-background'>
-          <ScrollArea className='h-[calc(100vh-22rem)] w-full'>
-            <div className="w-max min-w-full inline-block align-middle">
-              <Table>
-                <TableHeader className='bg-muted/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm'>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className='hover:bg-transparent border-b'>
-                      {onRowDelete && (
-                        <TableHead className='w-12 sticky left-0 bg-muted/95 backdrop-blur z-30'>
-                          <span className='sr-only'>Actions</span>
-                        </TableHead>
-                      )}
-                      {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id} colSpan={header.colSpan} className="whitespace-nowrap">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <SwipeableTableRow
-                        key={row.id}
-                        row={row}
-                        onRowClick={onRowClick}
-                        onRowDelete={handleDeleteRequest}
-                        isMobile={isMobile}
-                      />
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={table.getAllColumns().length + (onRowDelete ? 1 : 0)}
-                        className='h-24 text-center'
+      <div className='w-full space-y-4'>
+        <div className='relative w-full border rounded-md bg-background overflow-hidden'>
+          <div className='overflow-x-auto overflow-y-auto max-h-[calc(100vh-22rem)] scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent'>
+            <table className='w-full caption-bottom text-sm relative table-fixed md:table-auto'>
+              <thead className='sticky top-0 z-20 bg-muted/95 backdrop-blur shadow-sm'>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id} className='border-b hover:bg-transparent'>
+                    {onRowDelete && (
+                      <th className='w-12 sticky left-0 bg-muted/95 backdrop-blur z-30 border-r h-10 px-2 text-left align-middle font-medium'>
+                        <span className='sr-only'>Actions</span>
+                      </th>
+                    )}
+                    {headerGroup.headers.map((header) => (
+                      <th
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        className='text-foreground h-10 px-2 text-left align-middle font-medium'
                       >
-                        <div className='flex flex-col items-center justify-center gap-2 text-muted-foreground'>
-                          <p className='text-sm font-medium'>No results found</p>
-                          <p className='text-xs'>Try adjusting your filters or search terms</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <ScrollBar orientation='horizontal' />
-          </ScrollArea>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <SwipeableTableRow
+                      key={row.id}
+                      row={row}
+                      onRowClick={onRowClick}
+                      onRowDelete={handleDeleteRequest}
+                      isMobile={isMobile}
+                    />
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={table.getAllColumns().length + (onRowDelete ? 1 : 0)}
+                      className='h-24 text-center p-2 align-middle'
+                    >
+                      <div className='flex flex-col items-center justify-center gap-2 text-muted-foreground'>
+                        <p className='text-sm font-medium'>No results found</p>
+                        <p className='text-xs'>Try adjusting your filters or search terms</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <DataTablePagination table={table} />

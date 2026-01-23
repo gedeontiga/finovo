@@ -87,7 +87,7 @@ export function DataTableColumnHeader<TData, TValue>({
           <DropdownMenuCheckboxItem
             className='[&_svg]:text-muted-foreground relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto'
             checked={!column.getIsVisible()}
-            onClick={() => column.toggleVisibility(false)}
+            onClick={() => column.toggleVisibility(!column.getIsVisible())}
           >
             <EyeOff />
             Hide

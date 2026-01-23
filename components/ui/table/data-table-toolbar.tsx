@@ -6,13 +6,13 @@ import { DataTableViewOptions } from '@/components/ui/table/data-table-view-opti
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import { Cross2Icon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { X, Search } from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from '@/components/ui/select';
 import { IconFilter, IconFilterOff } from '@tabler/icons-react';
 
@@ -52,12 +52,10 @@ export function DataTableToolbar<TData>({
       className={cn('flex flex-col gap-4', className)}
       {...props}
     >
-      {/* Top row: Search and actions */}
       <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
-        {/* Search */}
         {searchKey && (
-          <div className='relative flex-1 max-w-sm'>
-            <MagnifyingGlassIcon className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+          <div className='relative flex-1 max-w-sm w-full sm:w-auto'>
+            <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
             <Input
               placeholder='Search...'
               value={searchValue}
@@ -71,14 +69,13 @@ export function DataTableToolbar<TData>({
                 className='absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7'
                 onClick={() => handleSearch('')}
               >
-                <Cross2Icon className='h-3 w-3' />
+                <X className='h-3 w-3' />
               </Button>
             )}
           </div>
         )}
 
-        {/* Actions */}
-        <div className='flex items-center gap-2 w-full sm:w-auto'>
+        <div className='flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap'>
           {isFiltered && (
             <Button
               variant='outline'
@@ -91,13 +88,12 @@ export function DataTableToolbar<TData>({
             </Button>
           )}
 
-          {/* Page size selector */}
           <div className='flex items-center gap-2'>
             <span className='text-sm text-muted-foreground hidden md:inline whitespace-nowrap'>
               Rows:
             </span>
             <Select
-              value={`${table.getState().pagination.pageSize}`}
+              value={String(table.getState().pagination.pageSize)}
               onValueChange={(value) => {
                 table.setPageSize(Number(value));
               }}
@@ -106,9 +102,9 @@ export function DataTableToolbar<TData>({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent side='top'>
-                {pageSizeOptions.map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
-                    {pageSize}
+                {pageSizeOptions.map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -120,7 +116,6 @@ export function DataTableToolbar<TData>({
         </div>
       </div>
 
-      {/* Filter indicators */}
       {isFiltered && (
         <div className='flex flex-wrap items-center gap-2'>
           <div className='flex items-center gap-2 text-sm text-muted-foreground'>
@@ -137,14 +132,14 @@ export function DataTableToolbar<TData>({
                 className='flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-sm'
               >
                 <span className='font-medium'>{columnLabel}:</span>
-                <span className='text-muted-foreground'>{String(filter.value)}</span>
+                <span className='text-muted-foreground truncate max-w-37.5'>{String(filter.value)}</span>
                 <Button
                   variant='ghost'
                   size='icon'
                   className='h-4 w-4 ml-1 hover:bg-background'
                   onClick={() => column?.setFilterValue(undefined)}
                 >
-                  <Cross2Icon className='h-3 w-3' />
+                  <X className='h-3 w-3' />
                 </Button>
               </div>
             );

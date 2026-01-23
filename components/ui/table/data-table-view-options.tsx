@@ -1,25 +1,16 @@
 'use client';
 
 import type { Table } from '@tanstack/react-table';
-import { Settings2 } from 'lucide-react';
-
+import { Settings2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import * as React from 'react';
-import { CheckIcon, CaretSortIcon } from '@radix-ui/react-icons';
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>;
@@ -28,60 +19,54 @@ interface DataTableViewOptionsProps<TData> {
 export function DataTableViewOptions<TData>({
   table
 }: DataTableViewOptionsProps<TData>) {
-  const columns = React.useMemo(
-    () =>
-      table
-        .getAllColumns()
-        .filter(
-          (column) =>
-            typeof column.accessorFn !== 'undefined' && column.getCanHide()
-        ),
-    [table]
-  );
+  // Get all columns that can be hidden, excluding globalSearch
+  const columns = table
+    .getAllColumns()
+    .filter(
+      (column) =>
+        column.getCanHide() &&
+        column.id !== 'globalSearch' && // Explicitly exclude global search
+        typeof column.accessorFn !== 'undefined'
+    );
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <Button
           aria-label='Toggle columns'
-          role='combobox'
           variant='outline'
           size='sm'
-          className='ml-auto hidden h-8 lg:flex'
+          className='ml-auto h-9 flex gap-2'
         >
-          <Settings2 />
-          View
-          <CaretSortIcon className='ml-auto opacity-50' />
+          <Settings2 className='h-4 w-4' />
+          <span className="hidden sm:inline">View</span>
+          <ChevronDown className='h-4 w-4 opacity-50' />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent align='end' className='w-44 p-0'>
-        <Command>
-          <CommandInput placeholder='Search columns...' />
-          <CommandList>
-            <CommandEmpty>No columns found.</CommandEmpty>
-            <CommandGroup>
-              {columns.map((column) => (
-                <CommandItem
-                  key={column.id}
-                  onSelect={() =>
-                    column.toggleVisibility(!column.getIsVisible())
-                  }
-                >
-                  <span className='truncate'>
-                    {column.columnDef.meta?.label ?? column.id}
-                  </span>
-                  <CheckIcon
-                    className={cn(
-                      'ml-auto size-4 shrink-0',
-                      column.getIsVisible() ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end' className='w-48'>
+        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {columns.length === 0 ? (
+          <div className="p-2 text-sm text-muted-foreground text-center">
+            No columns available
+          </div>
+        ) : (
+          columns.map((column) => {
+            return (
+              <DropdownMenuCheckboxItem
+                key={column.id}
+                className='capitalize'
+                checked={column.getIsVisible()}
+                onCheckedChange={(value) => {
+                  column.toggleVisibility(!!value);
+                }}
+              >
+                {column.columnDef.meta?.label ?? column.id}
+              </DropdownMenuCheckboxItem>
+            );
+          })
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

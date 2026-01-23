@@ -74,14 +74,14 @@ export default async function BudgetPage() {
 
 	return (
 		<PageContainer>
-			<div className="flex flex-col space-y-6">
+			<div className="flex flex-col space-y-4 sm:space-y-6 px-2 sm:px-0">
 				{/* Header */}
-				<div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-					<div>
-						<h2 className="text-3xl font-bold tracking-tight bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+				<div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+					<div className="w-full sm:w-auto">
+						<h2 className="text-2xl sm:text-3xl font-bold tracking-tight bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
 							Budget Management
 						</h2>
-						<p className="text-muted-foreground text-sm mt-1">
+						<p className="text-muted-foreground text-xs sm:text-sm mt-1">
 							Manage budget lines with advanced filtering and sorting
 						</p>
 					</div>
@@ -97,67 +97,71 @@ export default async function BudgetPage() {
 				</div>
 
 				{/* Summary Cards */}
-				<div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+				<div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
 					<Card className="border-border/50 hover:shadow-md transition-shadow">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-								<IconDatabase className="h-4 w-4" /> Total Records
+						<CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+							<CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+								<IconDatabase className="h-3 w-3 sm:h-4 sm:w-4" />
+								<span className="hidden xs:inline">Total Records</span>
+								<span className="xs:hidden">Records</span>
 							</CardTitle>
 						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold tabular-nums">
+						<CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+							<div className="text-xl sm:text-2xl font-bold tabular-nums">
 								{data.length.toLocaleString('fr-FR')}
 							</div>
-							<p className="text-xs text-muted-foreground mt-1">
+							<p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
 								Active budget lines
 							</p>
 						</CardContent>
 					</Card>
 
 					<Card className="border-border/50 hover:shadow-md transition-shadow">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium text-muted-foreground">
+						<CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+							<CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
 								Total AE
 							</CardTitle>
 						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">
-								{formatCompact(totalAE)} XAF
+						<CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+							<div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 tabular-nums">
+								{formatCompact(totalAE)}
 							</div>
-							<p className="text-xs text-muted-foreground mt-1">
-								CP: {formatCompact(totalCP)} XAF
+							<p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
+								CP: {formatCompact(totalCP)}
 							</p>
 						</CardContent>
 					</Card>
 
 					<Card className="border-border/50 hover:shadow-md transition-shadow">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-								<IconTrendingUp className="h-4 w-4" /> Engaged
+						<CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+							<CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+								<IconTrendingUp className="h-3 w-3 sm:h-4 sm:w-4" /> Engaged
 							</CardTitle>
 						</CardHeader>
-						<CardContent>
-							<div className="text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
-								{formatCompact(totalEngaged)} XAF
+						<CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+							<div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 tabular-nums">
+								{formatCompact(totalEngaged)}
 							</div>
-							<p className="text-xs text-muted-foreground mt-1">
-								{avgExecutionRate.toFixed(1)}% execution rate
+							<p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
+								{avgExecutionRate.toFixed(1)}% execution
 							</p>
 						</CardContent>
 					</Card>
 
 					<Card className="border-border/50 hover:shadow-md transition-shadow">
-						<CardHeader className="pb-3">
-							<CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-								<IconAlertTriangle className="h-4 w-4" /> High Risk
+						<CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+							<CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5 sm:gap-2">
+								<IconAlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
+								<span className="hidden xs:inline">High Risk</span>
+								<span className="xs:hidden">Risk</span>
 							</CardTitle>
 						</CardHeader>
-						<CardContent>
-							<div className={`text-2xl font-bold tabular-nums ${highRiskLines > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+						<CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+							<div className={`text-xl sm:text-2xl font-bold tabular-nums ${highRiskLines > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
 								{highRiskLines}
 							</div>
-							<p className="text-xs text-muted-foreground mt-1">
-								Lines over 90% execution
+							<p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
+								Over 90% execution
 							</p>
 						</CardContent>
 					</Card>
@@ -165,19 +169,22 @@ export default async function BudgetPage() {
 
 				{/* Data Table */}
 				<Card className="border-border/50 shadow-md">
-					<CardHeader className="py-5 border-b">
+					<CardHeader className="py-3 sm:py-5 border-b px-3 sm:px-6">
 						<div className="flex items-center justify-between">
 							<div>
-								<CardTitle className="text-lg font-semibold flex items-center gap-2">
-									<IconFileSpreadsheet className="h-5 w-5 text-primary" /> Budget Lines Database
+								<CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+									<IconFileSpreadsheet className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+									<span className="hidden sm:inline">Budget Lines Database</span>
+									<span className="sm:hidden">Budget Lines</span>
 								</CardTitle>
-								<CardDescription className="mt-1">
-									Click on any row to edit • Hover over row number to delete • Swipe left on mobile
+								<CardDescription className="mt-1 text-xs sm:text-sm">
+									<span className="hidden sm:inline">Click on any row to edit • Hover over row number to delete • Swipe left on mobile</span>
+									<span className="sm:hidden">Tap to edit • Swipe left to delete</span>
 								</CardDescription>
 							</div>
 						</div>
 					</CardHeader>
-					<CardContent className="p-6">
+					<CardContent className="p-3 sm:p-6">
 						<BudgetTable data={data} />
 					</CardContent>
 				</Card>

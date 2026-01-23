@@ -14,7 +14,7 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { useState, useCallback, useMemo } from "react";
+import { useState } from "react";
 
 interface EnhancedDataTableProps<TData, TValue> {
 	data: TData[];
@@ -46,17 +46,19 @@ export function EnhancedDataTable<TData, TValue>({
 		pageSize: defaultPageSize,
 	});
 
-	// Memoize data and columns to prevent unnecessary re-renders
-	const memoizedData = useMemo(() => data, [data]);
-	const memoizedColumns = useMemo(() => columns, [columns]);
-
 	const table = useReactTable({
-		data: memoizedData,
-		columns: memoizedColumns,
+		data,
+		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
+		onSortingChange: setSorting,
+		onColumnFiltersChange: setColumnFilters,
+		onColumnVisibilityChange: setColumnVisibility,
+		onRowSelectionChange: setRowSelection,
+		onPaginationChange: setPagination,
+		enableRowSelection,
 		state: {
 			sorting,
 			columnFilters,
@@ -64,15 +66,9 @@ export function EnhancedDataTable<TData, TValue>({
 			rowSelection,
 			pagination,
 		},
-		onSortingChange: setSorting,
-		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
-		onRowSelectionChange: setRowSelection,
-		onPaginationChange: setPagination,
-		enableRowSelection,
 	});
 
-	const handleRowClick = useCallback((row: TData, e: React.MouseEvent) => {
+	const handleRowClick = (row: TData, e: React.MouseEvent) => {
 		const target = e.target as HTMLElement;
 		if (
 			target.closest('button') ||
@@ -84,7 +80,7 @@ export function EnhancedDataTable<TData, TValue>({
 			return;
 		}
 		onRowClick?.(row);
-	}, [onRowClick]);
+	};
 
 	return (
 		<div className="flex flex-col gap-4 w-full">

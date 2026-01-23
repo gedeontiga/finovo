@@ -26,11 +26,11 @@ const formatCurrency = (value: number) =>
 		maximumFractionDigits: 0,
 	}).format(value);
 
-interface EnhancedBudgetTableProps {
+interface BudgetTableProps {
 	data: BudgetLineRow[];
 }
 
-export function BudgetTable({ data }: EnhancedBudgetTableProps) {
+export function BudgetTable({ data }: BudgetTableProps) {
 	const router = useRouter();
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [selectedRow, setSelectedRow] = useState<BudgetLineRow | null>(null);
@@ -91,7 +91,7 @@ export function BudgetTable({ data }: EnhancedBudgetTableProps) {
 				columns={columns}
 				onRowClick={handleRowClick}
 				onRowDelete={handleRowDelete}
-				searchKey="paragraph"
+				searchKey="globalSearch"
 				defaultPageSize={20}
 				pageSizeOptions={[10, 20, 30, 50, 100]}
 			/>
@@ -104,29 +104,28 @@ export function BudgetTable({ data }: EnhancedBudgetTableProps) {
 					<ScrollArea className="max-h-[70vh] px-6">
 						{selectedRow && (
 							<div className="grid gap-6 py-4">
-								{/* Read-only information */}
 								<div className="space-y-4 rounded-lg bg-muted/50 p-4 border text-sm">
 									<div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
 										<Label className="font-semibold text-muted-foreground">Program</Label>
 										<div className="sm:col-span-3">
-											<span className="font-mono font-semibold mr-2">{selectedRow.program}</span>
-											<span>{selectedRow.programName}</span>
+											<span className="font-mono font-semibold mr-2">{selectedRow.program || "-"}</span>
+											<span>{selectedRow.programName || "-"}</span>
 										</div>
 									</div>
 
 									<div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
 										<Label className="font-semibold text-muted-foreground">Action</Label>
 										<div className="sm:col-span-3">
-											<span className="font-mono font-semibold mr-2">{selectedRow.action}</span>
-											<span>{selectedRow.actionName}</span>
+											<span className="font-mono font-semibold mr-2">{selectedRow.action || "-"}</span>
+											<span>{selectedRow.actionName || "-"}</span>
 										</div>
 									</div>
 
 									<div className="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
 										<Label className="font-semibold text-muted-foreground">Activity</Label>
 										<div className="sm:col-span-3">
-											<span className="font-mono font-semibold mr-2">{selectedRow.activity}</span>
-											<span>{selectedRow.activityName}</span>
+											<span className="font-mono font-semibold mr-2">{selectedRow.activity || "-"}</span>
+											<span>{selectedRow.activityName || "-"}</span>
 										</div>
 									</div>
 
@@ -139,7 +138,6 @@ export function BudgetTable({ data }: EnhancedBudgetTableProps) {
 									</div>
 								</div>
 
-								{/* Editable Fields */}
 								<div className="space-y-4">
 									<div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-4">
 										<Label htmlFor="ae" className="sm:text-right">Authorized (AE)</Label>
@@ -173,7 +171,6 @@ export function BudgetTable({ data }: EnhancedBudgetTableProps) {
 									</div>
 								</div>
 
-								{/* Calculated values */}
 								<div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-muted/30 p-4 rounded-lg border">
 									<div className="flex items-center gap-2">
 										<span className="text-sm text-muted-foreground">Execution Rate:</span>

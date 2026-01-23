@@ -22,20 +22,46 @@ export type ProgramRow = {
 	activitiesCount: number;
 };
 
+// Global search filter
+const globalFilterFn = (row: any, columnId: string, filterValue: string) => {
+	const search = String(filterValue).toLowerCase();
+
+	const searchableValues = [
+		row.original.code,
+		row.original.name,
+		String(row.original.ae),
+		String(row.original.cp),
+		String(row.original.engaged),
+		String(row.original.activitiesCount),
+	];
+
+	return searchableValues.some(value =>
+		String(value || '').toLowerCase().includes(search)
+	);
+};
+
 export const columns: ColumnDef<ProgramRow>[] = [
+	// Hidden global search column
+	{
+		id: "globalSearch",
+		accessorFn: (row) => `${row.code} ${row.name} ${row.ae} ${row.cp} ${row.engaged}`,
+		filterFn: globalFilterFn,
+		enableHiding: false, // Cannot be hidden/shown
+		enableSorting: false,
+	},
 	{
 		accessorKey: "code",
 		header: ({ column }) => <DataTableColumnHeader column={column} title="Code" />,
 		cell: ({ row }) => {
 			const code = row.original.code;
 			return (
-				<span className="font-bold font-mono text-primary min-w-20 block">
+				<span className="font-bold font-mono text-primary min-w-20 block whitespace-nowrap">
 					{code}
 				</span>
 			);
 		},
 		enableSorting: true,
-		filterFn: "includesString",
+		enableHiding: true,
 		meta: { label: "Code" },
 	},
 	{
@@ -44,102 +70,110 @@ export const columns: ColumnDef<ProgramRow>[] = [
 		cell: ({ row }) => {
 			const name = row.original.name;
 			return (
-				<span className="text-sm min-w-50 block truncate" title={name}>
+				<span className="text-sm min-w-50 max-w-75 block line-clamp-2 wrap-break-word" title={name}>
 					{name}
 				</span>
 			);
 		},
 		enableSorting: true,
-		filterFn: "includesString",
+		enableHiding: true,
 		meta: { label: "Program Name" },
 	},
 	{
 		accessorKey: "activitiesCount",
 		header: ({ column }) => (
-			<div className="text-center min-w-25">
+			<div className="text-center">
 				<DataTableColumnHeader column={column} title="Lines" />
 			</div>
 		),
 		cell: ({ row }) => {
 			const count = row.original.activitiesCount;
 			return (
-				<span className="text-muted-foreground text-sm min-w-25 block text-center font-semibold">
+				<span className="text-muted-foreground text-sm min-w-25 block text-center font-semibold whitespace-nowrap">
 					{count}
 				</span>
 			);
 		},
+		enableHiding: true,
 		meta: { label: "Budget Lines" },
 	},
 	{
 		accessorKey: "ae",
 		header: ({ column }) => (
-			<div className="text-right min-w-30">
+			<div className="text-right">
 				<DataTableColumnHeader column={column} title="Auth (AE)" />
 			</div>
 		),
 		cell: ({ row }) => {
 			const value = row.original.ae;
 			return (
-				<div className="text-right font-mono text-sm min-w-30 text-blue-600 dark:text-blue-400 font-semibold">
+				<div className="text-right font-mono text-sm min-w-30 text-blue-600 dark:text-blue-400 font-semibold whitespace-nowrap pr-4">
 					{formatCurrency(value)}
 				</div>
 			);
 		},
+		enableHiding: true,
 		meta: { label: "Auth (AE)" },
 	},
 	{
 		accessorKey: "cp",
 		header: ({ column }) => (
-			<div className="text-right min-w-30">
+			<div className="text-right">
 				<DataTableColumnHeader column={column} title="CP" />
 			</div>
 		),
 		cell: ({ row }) => {
 			const value = row.original.cp;
 			return (
-				<div className="text-right font-mono text-sm min-w-30 text-purple-600 dark:text-purple-400">
+				<div className="text-right font-mono text-sm min-w-30 text-purple-600 dark:text-purple-400 whitespace-nowrap pr-4">
 					{formatCurrency(value)}
 				</div>
 			);
 		},
+		enableHiding: true,
 		meta: { label: "CP (Credits)" },
 	},
 	{
 		accessorKey: "engaged",
 		header: ({ column }) => (
-			<div className="text-right min-w-30">
+			<div className="text-right">
 				<DataTableColumnHeader column={column} title="Engaged" />
 			</div>
 		),
 		cell: ({ row }) => {
 			const value = row.original.engaged;
 			return (
-				<div className="text-right font-mono text-sm min-w-30 text-green-600 dark:text-green-400 font-semibold">
+				<div className="text-right font-mono text-sm min-w-30 text-green-600 dark:text-green-400 font-semibold whitespace-nowrap pr-4">
 					{formatCurrency(value)}
 				</div>
 			);
 		},
+		enableHiding: true,
 		meta: { label: "Engaged" },
 	},
 	{
 		accessorKey: "executionRate",
-		header: ({ column }) => <div className="min-w-37.5"><DataTableColumnHeader column={column} title="Execution" /></div>,
+		header: ({ column }) => (
+			<div className="min-w-37.5">
+				<DataTableColumnHeader column={column} title="Execution" />
+			</div>
+		),
 		cell: ({ row }) => {
 			const rate = row.original.executionRate;
 			const disponible = row.original.ae - row.original.engaged;
 
 			return (
-				<div className="min-w-37.5 space-y-2">
+				<div className="min-w-37.5 max-w-50 space-y-2 pr-4">
 					<div className="flex justify-between text-xs mb-1.5">
 						<span className={cn(
-							"font-semibold",
+							"font-semibold whitespace-nowrap",
 							rate > 95 ? "text-red-600 dark:text-red-400" :
 								rate > 90 ? "text-amber-600 dark:text-amber-400" :
 									"text-green-600 dark:text-green-400"
 						)}>
 							{rate.toFixed(1)}%
 						</span>
-						<span className="text-muted-foreground text-[10px]">
+						<span className="text-muted-foreground text-[10px] whitespace-nowrap">
 							Disp: {formatCurrency(disponible)}
 						</span>
 					</div>
@@ -155,6 +189,7 @@ export const columns: ColumnDef<ProgramRow>[] = [
 				</div>
 			);
 		},
+		enableHiding: true,
 		meta: { label: "Execution" },
 	},
 ];
