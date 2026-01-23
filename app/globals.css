@@ -1,10 +1,10 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@import 'tw-animate-css';
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
-@import './theme.css';
+@import "./theme.css";
 
 :root {
   --radius: 0.625rem;
@@ -42,7 +42,7 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: #0a0a0a;
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
@@ -162,9 +162,9 @@
 /* Custom Finovo Gradient Utility */
 @layer utilities {
   .text-gradient-finovo {
-    @apply bg-clip-text text-transparent bg-linear-to-br from-[#fe9a00] to-[#262626];
+    @apply bg-clip-text text-transparent bg-linear-to-br from-[#fe9a00] to-[#ffffff];
   }
   .bg-gradient-finovo {
-    @apply bg-linear-to-br from-[#0a0a0a] to-[#262626];
+    @apply bg-linear-to-br from-[#1449e6a1] to-[#0a0a0a];
   }
 }

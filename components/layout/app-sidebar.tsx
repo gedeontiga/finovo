@@ -44,6 +44,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
+import type { NavItem } from '@/types';
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -63,7 +64,7 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Overview</SidebarGroupLabel>
           <SidebarMenu>
             {filteredItems.map((item) => {
-              const Icon = item.icon ? Icons[item.icon] : Icons.logo;
+              const Icon = item.icon ? Icons[item.icon as keyof typeof Icons] : Icons.logo;
               return item?.items && item?.items?.length > 0 ? (
                 <Collapsible
                   key={item.title}
@@ -84,7 +85,7 @@ export default function AppSidebar() {
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items?.map((subItem) => (
+                        {item.items?.map((subItem: NavItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
                               asChild
@@ -167,7 +168,7 @@ export default function AppSidebar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <IconLogout className='mr-2 h-4 w-4' />
-                  <SignOutButton redirectUrl='/sign-in' />
+                  <SignOutButton redirectUrl='/' />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

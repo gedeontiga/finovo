@@ -23,10 +23,6 @@ export function DataTablePagination<TData>({
   className,
   ...props
 }: DataTablePaginationProps<TData>) {
-  const currentPage = table.getState().pagination.pageIndex;
-  const pageCount = table.getPageCount();
-  const canPreviousPage = currentPage > 0;
-  const canNextPage = currentPage < pageCount - 1;
 
   return (
     <div
@@ -70,7 +66,7 @@ export function DataTablePagination<TData>({
         </div>
 
         <div className='flex items-center justify-center text-sm font-medium whitespace-nowrap'>
-          Page {currentPage + 1} of {pageCount || 1}
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
         </div>
 
         <div className='flex items-center gap-2'>
@@ -80,7 +76,7 @@ export function DataTablePagination<TData>({
             size='icon'
             className='hidden size-8 lg:flex'
             onClick={() => table.setPageIndex(0)}
-            disabled={!canPreviousPage}
+            disabled={!table.getCanPreviousPage()} // FIXED: Use internal getter
           >
             <ChevronsLeft className="h-4 w-4" />
           </Button>
@@ -90,7 +86,7 @@ export function DataTablePagination<TData>({
             size='icon'
             className='size-8'
             onClick={() => table.previousPage()}
-            disabled={!canPreviousPage}
+            disabled={!table.getCanPreviousPage()} // FIXED: Use internal getter
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -100,7 +96,7 @@ export function DataTablePagination<TData>({
             size='icon'
             className='size-8'
             onClick={() => table.nextPage()}
-            disabled={!canNextPage}
+            disabled={!table.getCanNextPage()} // FIXED: Use internal getter
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -109,8 +105,8 @@ export function DataTablePagination<TData>({
             variant='outline'
             size='icon'
             className='hidden size-8 lg:flex'
-            onClick={() => table.setPageIndex(pageCount - 1)}
-            disabled={!canNextPage}
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()} // FIXED: Use internal getter
           >
             <ChevronsRight className="h-4 w-4" />
           </Button>

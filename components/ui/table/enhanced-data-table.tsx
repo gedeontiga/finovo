@@ -68,9 +68,7 @@ export function EnhancedDataTable<TData, TValue>({
 			rowSelection,
 			pagination,
 		},
-		// Ensure manual pagination state updates are respected
-		manualPagination: false,
-		pageCount: Math.ceil(data.length / pagination.pageSize),
+		manualPagination: false
 	});
 
 	const handleRowClick = (row: TData, e: React.MouseEvent) => {
@@ -97,6 +95,7 @@ export function EnhancedDataTable<TData, TValue>({
 				table={table}
 				onRowClick={handleRowClick}
 				onRowDelete={onRowDelete}
+				pageSizeOptions={pageSizeOptions}
 			/>
 		</div>
 	);

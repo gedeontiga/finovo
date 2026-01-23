@@ -21,6 +21,7 @@ interface DataTableProps<TData> {
   table: TanstackTable<TData>;
   onRowClick?: (row: TData, e: React.MouseEvent) => void;
   onRowDelete?: (row: TData) => void;
+  pageSizeOptions?: number[];
 }
 
 function SwipeableTableRow<TData>({
@@ -136,6 +137,7 @@ export function DataTable<TData>({
   table,
   onRowClick,
   onRowDelete,
+  pageSizeOptions,
 }: DataTableProps<TData>) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<TData | null>(null);
@@ -221,7 +223,7 @@ export function DataTable<TData>({
           </div>
         </div>
 
-        <DataTablePagination table={table} />
+        <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
