@@ -53,18 +53,38 @@ export default function AppSidebar() {
   const router = useRouter();
   const filteredItems = useFilteredNavItems(navItems);
 
-  React.useEffect(() => {
-    // Side effects based on sidebar state changes
-  }, [isOpen]);
-
   return (
-    <Sidebar collapsible='icon'>
+    <Sidebar collapsible='icon' className="border-r border-border/50">
+      {/* Enhanced Header with Logo */}
+      <SidebarHeader className="border-b border-border/50 bg-linear-to-br from-primary/5 to-transparent">
+        <div className="flex items-center gap-3 px-3 py-4 group cursor-pointer">
+          <div className="relative shrink-0">
+            <img
+              src="/finovo-icon.png"
+              alt="Finovo"
+              className="w-8 h-8 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+            />
+            <div className="absolute inset-0 bg-[#fe9a00]/20 blur-md group-hover:bg-[#fe9a00]/40 transition-all duration-300 rounded-full" />
+          </div>
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <span className="font-bold text-xl bg-linear-to-r from-[#fe9a00] to-[#ffb84d] bg-clip-text text-transparent">
+              Finovo
+            </span>
+            <span className="text-xs text-muted-foreground">Financial Platform</span>
+          </div>
+        </div>
+      </SidebarHeader>
+
       <SidebarContent className='overflow-x-hidden'>
         <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold tracking-wider uppercase text-muted-foreground/70">
+            Overview
+          </SidebarGroupLabel>
           <SidebarMenu>
             {filteredItems.map((item) => {
               const Icon = item.icon ? Icons[item.icon as keyof typeof Icons] : Icons.logo;
+              const isActive = pathname === item.url;
+
               return item?.items && item?.items?.length > 0 ? (
                 <Collapsible
                   key={item.title}
@@ -76,27 +96,32 @@ export default function AppSidebar() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
                         tooltip={item.title}
-                        isActive={pathname === item.url}
+                        isActive={isActive}
+                        className="hover:bg-primary/10 transition-all duration-200 data-[active=true]:bg-linear-to-r data-[active=true]:from-primary/15 data-[active=true]:to-primary/5 data-[active=true]:border-l-2 data-[active=true]:border-primary"
                       >
-                        {item.icon && <Icon />}
-                        <span>{item.title}</span>
+                        {item.icon && <Icon className="transition-transform duration-200 group-hover/collapsible:scale-110" />}
+                        <span className="font-medium">{item.title}</span>
                         <IconChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <SidebarMenuSub>
-                        {item.items?.map((subItem: NavItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={pathname === subItem.url}
-                            >
-                              <Link href={subItem.url}>
-                                <span>{subItem.title}</span>
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
+                        {item.items?.map((subItem: NavItem) => {
+                          const isSubActive = pathname === subItem.url;
+                          return (
+                            <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={isSubActive}
+                                className="hover:bg-primary/10 transition-all duration-200 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium"
+                              >
+                                <Link href={subItem.url}>
+                                  <span>{subItem.title}</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
                       </SidebarMenuSub>
                     </CollapsibleContent>
                   </SidebarMenuItem>
@@ -106,11 +131,12 @@ export default function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
-                    isActive={pathname === item.url}
+                    isActive={isActive}
+                    className="hover:bg-primary/10 transition-all duration-200 data-[active=true]:bg-linear-to-r data-[active=true]:from-primary/15 data-[active=true]:to-primary/5 data-[active=true]:border-l-2 data-[active=true]:border-primary group/item"
                   >
                     <Link href={item.url}>
-                      <Icon />
-                      <span>{item.title}</span>
+                      <Icon className="transition-transform duration-200 group-hover/item:scale-110" />
+                      <span className="font-medium">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -119,18 +145,19 @@ export default function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
+
+      <SidebarFooter className="border-t border-border/50 bg-linear-to-br from-primary/5 to-transparent">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size='lg'
-                  className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
+                  className='data-[state=open]:bg-primary/10 data-[state=open]:text-primary hover:bg-primary/10 transition-all duration-200'
                 >
                   {user && (
                     <UserAvatarProfile
-                      className='h-8 w-8 rounded-lg'
+                      className='h-8 w-8 rounded-lg border-2 border-primary/20'
                       showInfo
                       user={user}
                     />
@@ -139,13 +166,13 @@ export default function AppSidebar() {
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg'
+                className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg shadow-lg border-border/50'
                 side='bottom'
                 align='end'
                 sideOffset={4}
               >
                 <DropdownMenuLabel className='p-0 font-normal'>
-                  <div className='px-1 py-1.5'>
+                  <div className='px-1 py-1.5 bg-linear-to-br from-primary/5 to-transparent'>
                     {user && (
                       <UserAvatarProfile
                         className='h-8 w-8 rounded-lg'
@@ -160,13 +187,14 @@ export default function AppSidebar() {
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     onClick={() => router.push('/dashboard/profile')}
+                    className="cursor-pointer hover:bg-primary/10 transition-colors"
                   >
                     <IconUserCircle className='mr-2 h-4 w-4' />
                     Profile
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer hover:bg-destructive/10 text-destructive focus:text-destructive transition-colors">
                   <IconLogout className='mr-2 h-4 w-4' />
                   <SignOutButton redirectUrl='/' />
                 </DropdownMenuItem>

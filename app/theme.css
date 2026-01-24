@@ -16,57 +16,74 @@ body {
     --spacing: 0.222222rem;
   }
 
-  [data-slot='card'] {
+  [data-slot="card"] {
     --spacing: 0.16rem;
   }
 
-  [data-slot='select-trigger'],
-  [data-slot='toggle-group-item'] {
+  [data-slot="select-trigger"],
+  [data-slot="toggle-group-item"] {
     --spacing: 0.222222rem;
   }
 }
 
+/* Enhanced Finovo Financial Platform Theme */
 .theme-default,
 .theme-default-scaled {
-  --primary: var(--color-neutral-600);
-  --primary-foreground: var(--color-neutral-50);
+  --primary: #1449e6;
+  --primary-foreground: #ffffff;
+  --accent: #fe9a00;
+  --accent-foreground: #ffffff;
 
   @variant dark {
-    --primary: var(--color-neutral-500);
-    --primary-foreground: var(--color-neutral-50);
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    --accent: #fb923c;
+    --accent-foreground: #ffffff;
   }
 }
 
 .theme-blue,
 .theme-blue-scaled {
-  --primary: var(--color-blue-600);
-  --primary-foreground: var(--color-blue-50);
+  --primary: #1449e6;
+  --primary-foreground: #ffffff;
+  --accent: #0ea5e9;
+  --accent-foreground: #ffffff;
 
   @variant dark {
-    --primary: var(--color-blue-500);
-    --primary-foreground: var(--color-blue-50);
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --accent: #38bdf8;
+    --accent-foreground: #ffffff;
   }
 }
 
 .theme-green,
 .theme-green-scaled {
-  --primary: var(--color-lime-600);
-  --primary-foreground: var(--color-lime-50);
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
 
   @variant dark {
-    --primary: var(--color-lime-600);
-    --primary-foreground: var(--color-lime-50);
+    --primary: #10b981;
+    --primary-foreground: #ffffff;
+    --accent: #34d399;
+    --accent-foreground: #ffffff;
   }
 }
 
 .theme-amber,
 .theme-amber-scaled {
-  --primary: var(--color-amber-600);
-  --primary-foreground: var(--color-amber-50);
+  --primary: #d97706;
+  --primary-foreground: #ffffff;
+  --accent: #f59e0b;
+  --accent-foreground: #ffffff;
 
   @variant dark {
-    --primary: var(--color-amber-500);
-    --primary-foreground: var(--color-amber-50);
+    --primary: #f59e0b;
+    --primary-foreground: #ffffff;
+    --accent: #fbbf24;
+    --accent-foreground: #ffffff;
   }
 }
 
@@ -86,7 +103,6 @@ body {
   .rounded-md,
   .rounded-lg,
   .rounded-xl {
-    @apply rounded-none!;
     border-radius: 0;
   }
 
@@ -95,11 +111,113 @@ body {
   .shadow-md,
   .shadow-lg,
   .shadow-xl {
-    @apply shadow-none!;
+    box-shadow: none;
   }
 
-  [data-slot='toggle-group'],
-  [data-slot='toggle-group-item'] {
-    @apply rounded-none! shadow-none!;
+  [data-slot="toggle-group"],
+  [data-slot="toggle-group-item"] {
+    border-radius: 0;
+    box-shadow: none;
   }
+}
+
+/* Custom animations for modern feel */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.9s ease-out;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.6s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-700 {
+  animation-delay: 700ms;
+}
+
+/* Enhanced card styles for financial platform */
+[data-slot="card"] {
+  transition: all 0.2s;
+  border-color: hsl(var(--border) / 0.5);
+}
+
+[data-slot="card"]:hover {
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced button styles */
+button[data-slot="button"] {
+  transition: all 0.2s;
+}
+
+/* Gradient utilities for Finovo branding */
+.text-gradient-finovo {
+  background: linear-gradient(to right, #fe9a00, #ffb84d, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-finovo {
+  background: linear-gradient(to bottom right, #1449e6, #0a66c2, #0a0a0a);
+}
+
+/* Modern scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
 }

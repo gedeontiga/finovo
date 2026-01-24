@@ -1,31 +1,16 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-/**
- * InteractiveGridPattern is a component that renders a grid pattern with interactive squares.
- *
- * @param width - The width of each square.
- * @param height - The height of each square.
- * @param squares - The number of squares in the grid. The first element is the number of horizontal squares, and the second element is the number of vertical squares.
- * @param className - The class name of the grid.
- * @param squaresClassName - The class name of the squares.
- */
 interface InteractiveGridPatternProps extends React.SVGProps<SVGSVGElement> {
   width?: number;
   height?: number;
-  squares?: [number, number]; // [horizontal, vertical]
+  squares?: [number, number];
   className?: string;
   squaresClassName?: string;
 }
 
-/**
- * The InteractiveGridPattern component.
- *
- * @see InteractiveGridPatternProps for the props interface.
- * @returns A React component.
- */
 export function InteractiveGridPattern({
   width = 40,
   height = 40,
@@ -36,20 +21,51 @@ export function InteractiveGridPattern({
 }: InteractiveGridPatternProps) {
   const [horizontal, vertical] = squares;
   const [hoveredSquare, setHoveredSquare] = useState<number | null>(null);
+  const [randomHighlights, setRandomHighlights] = useState<Set<number>>(new Set());
+
+  // Add random highlights for ambient animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const totalSquares = horizontal * vertical;
+      const newHighlights = new Set<number>();
+
+      // Add 3-5 random highlights
+      const count = Math.floor(Math.random() * 3) + 3;
+      for (let i = 0; i < count; i++) {
+        newHighlights.add(Math.floor(Math.random() * totalSquares));
+      }
+
+      setRandomHighlights(newHighlights);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [horizontal, vertical]);
 
   return (
     <svg
       width={width * horizontal}
       height={height * vertical}
       className={cn(
-        'absolute inset-0 h-full w-full border border-[#fe9800cf]',
+        'absolute inset-0 h-full w-full pointer-events-auto',
         className
       )}
+      style={{ pointerEvents: 'auto' }}
       {...props}
     >
+      <defs>
+        <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fe9800" stopOpacity="1" />
+          <stop offset="50%" stopColor="#ffffff" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#fe9800" stopOpacity="1" />
+        </linearGradient>
+      </defs>
+
       {Array.from({ length: horizontal * vertical }).map((_, index) => {
         const x = (index % horizontal) * width;
         const y = Math.floor(index / horizontal) * height;
+        const isHighlighted = randomHighlights.has(index);
+        const isHovered = hoveredSquare === index;
+
         return (
           <rect
             key={index}
@@ -58,10 +74,20 @@ export function InteractiveGridPattern({
             width={width}
             height={height}
             className={cn(
-              'stroke-[#fe9800] transition-all duration-100 ease-in-out not-[&:hover]:duration-1000',
-              hoveredSquare === index ? 'fill-[#1449e640]' : 'fill-transparent',
+              'transition-all duration-500 ease-out',
               squaresClassName
             )}
+            style={{ cursor: 'pointer', pointerEvents: 'all' }}
+            stroke="url(#gridGradient)"
+            strokeWidth=".5"
+            fill={
+              isHovered
+                ? 'rgba(254, 152, 0, 0.4)'
+                : isHighlighted
+                  ? 'rgba(254, 152, 0, 0.15)'
+                  : 'transparent'
+            }
+            opacity={isHovered ? 1 : isHighlighted ? 0.8 : 0.5}
             onMouseEnter={() => setHoveredSquare(index)}
             onMouseLeave={() => setHoveredSquare(null)}
           />
