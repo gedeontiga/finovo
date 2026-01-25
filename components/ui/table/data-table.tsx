@@ -1,7 +1,7 @@
 "use client";
 
 import { type Table as TanstackTable, flexRender } from "@tanstack/react-table";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { DataTablePagination } from "@/components/ui/table/data-table-pagination";
 import { cn } from "@/lib/utils";
 import { IconTrash } from "@tabler/icons-react";
@@ -24,115 +24,6 @@ interface DataTableProps<TData> {
   pageSizeOptions?: number[];
 }
 
-function SwipeableTableRow<TData>({
-  row,
-  onRowClick,
-  onRowDelete,
-  isMobile,
-}: {
-  row: any;
-  onRowClick?: (row: TData, e: React.MouseEvent) => void;
-  onRowDelete?: (row: TData) => void;
-  isMobile: boolean;
-}) {
-  const rowRef = useRef<HTMLTableRowElement>(null);
-  const touchStart = useRef({ x: 0, y: 0 });
-  const isSwiping = useRef(false);
-  const isScrolling = useRef(false);
-  const DELETE_THRESHOLD = 100;
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!isMobile || !onRowDelete) return;
-    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    isSwiping.current = false;
-    isScrolling.current = false;
-    if (rowRef.current) {
-      rowRef.current.style.transition = "none";
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isMobile || !onRowDelete || isScrolling.current) return;
-
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    const deltaX = currentX - touchStart.current.x;
-    const deltaY = currentY - touchStart.current.y;
-
-    if (!isSwiping.current) {
-      if (Math.abs(deltaY) > Math.abs(deltaX)) {
-        isScrolling.current = true;
-        return;
-      }
-      if (Math.abs(deltaX) > 10 && deltaX < 0) {
-        isSwiping.current = true;
-      }
-    }
-
-    if (isSwiping.current && e.cancelable) {
-      e.preventDefault();
-      const newOffset = Math.min(0, Math.max(-150, deltaX));
-      if (rowRef.current) {
-        rowRef.current.style.transform = `translateX(${newOffset}px)`;
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (!isMobile || !onRowDelete || !rowRef.current) return;
-
-    rowRef.current.style.transition = "transform 0.3s ease-out";
-    const currentTransform = new WebKitCSSMatrix(
-      window.getComputedStyle(rowRef.current).transform,
-    ).m41;
-
-    if (currentTransform < -DELETE_THRESHOLD) {
-      onRowDelete(row.original);
-    }
-    rowRef.current.style.transform = "translateX(0)";
-    isSwiping.current = false;
-    isScrolling.current = false;
-  };
-
-  return (
-    <tr
-      ref={rowRef}
-      data-state={row.getIsSelected() && "selected"}
-      className={cn(
-        "group relative transition-colors duration-200 border-b hover:bg-muted/50 data-[state=selected]:bg-muted",
-        onRowClick && "cursor-pointer active:bg-muted",
-      )}
-      onClick={(e) => onRowClick?.(row.original, e)}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {onRowDelete && (
-        <td className="w-12 p-0 sticky left-0 bg-background z-10 border-r">
-          <div className="flex items-center justify-center h-full">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                onRowDelete(row.original);
-              }}
-            >
-              <IconTrash className="h-4 w-4" />
-            </Button>
-          </div>
-        </td>
-      )}
-      {row.getVisibleCells().map((cell: any) => (
-        <td key={cell.id} className="p-2 align-middle">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
-    </tr>
-  );
-}
-
 export function DataTable<TData>({
   table,
   onRowClick,
@@ -141,14 +32,6 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<TData | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const handleDeleteRequest = (row: TData) => {
     setRowToDelete(row);
@@ -166,64 +49,79 @@ export function DataTable<TData>({
   return (
     <>
       <div className="w-full space-y-4">
-        <div className="relative w-full border rounded-md bg-background overflow-hidden">
-          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-22rem)] scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent -mx-px">
-            <table className="w-full min-w-160 caption-bottom text-sm relative">
-              <thead className="sticky top-0 z-20 bg-muted/95 backdrop-blur shadow-sm">
+        <div className="rounded-md border">
+          <div className="relative w-full overflow-auto max-h-[calc(100vh-20rem)]">
+            <table className="w-full caption-bottom text-sm">
+              <thead className="sticky top-0 z-10 bg-muted/95 backdrop-blur">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr
-                    key={headerGroup.id}
-                    className="border-b hover:bg-transparent"
-                  >
+                  <tr key={headerGroup.id} className="border-b">
                     {onRowDelete && (
-                      <th className="w-12 sticky left-0 bg-muted/95 backdrop-blur z-30 border-r h-10 px-2 text-left align-middle font-medium">
+                      <th className="h-10 px-2 text-left align-middle font-medium w-12 sticky left-0 bg-muted/95 z-20">
                         <span className="sr-only">Actions</span>
                       </th>
                     )}
-                    {headerGroup.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        style={{
-                          minWidth: header.column.columnDef.minSize,
-                          width:
-                            header.column.getSize() !== 150
-                              ? header.column.getSize()
-                              : "auto",
-                        }}
-                        className="text-foreground h-10 px-2 text-left align-middle font-medium"
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                      </th>
-                    ))}
+                    {headerGroup.headers
+                      .filter((header) => header.column.getIsVisible())
+                      .map((header) => (
+                        <th
+                          key={header.id}
+                          className="h-10 px-2 text-left align-middle font-medium"
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                        </th>
+                      ))}
                   </tr>
                 ))}
               </thead>
               <tbody>
                 {table.getRowModel().rows?.length ? (
-                  table
-                    .getRowModel()
-                    .rows.map((row) => (
-                      <SwipeableTableRow
-                        key={row.id}
-                        row={row}
-                        onRowClick={onRowClick}
-                        onRowDelete={handleDeleteRequest}
-                        isMobile={isMobile}
-                      />
-                    ))
+                  table.getRowModel().rows.map((row) => (
+                    <tr
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className={cn(
+                        "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+                        onRowClick && "cursor-pointer",
+                      )}
+                      onClick={(e) => onRowClick?.(row.original, e)}
+                    >
+                      {onRowDelete && (
+                        <td className="p-2 w-12 sticky left-0 bg-background z-10">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteRequest(row.original);
+                            }}
+                          >
+                            <IconTrash className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      )}
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="p-2 align-middle">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))
                 ) : (
                   <tr>
                     <td
                       colSpan={
                         table.getAllColumns().length + (onRowDelete ? 1 : 0)
                       }
-                      className="h-24 text-center p-2 align-middle"
+                      className="h-24 text-center"
                     >
                       <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                         <p className="text-sm font-medium">No results found</p>
