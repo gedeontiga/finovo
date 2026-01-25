@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -29,13 +28,11 @@ interface ProgramEngagementTableProps {
     ae: number;
     engaged: number;
   }>;
-
   allPrograms: Array<{
     id: number;
     code: string;
     name: string;
   }>;
-
   programId: number | undefined;
 }
 
@@ -79,12 +76,7 @@ export function ProgramEngagementTable({
     label: `${p.code} - ${p.name}`,
   }));
 
-  const [selectedProgram, setSelectedProgram] = useState<string>(
-    programs[0]?.program || "",
-  );
-
-  const currentProgram =
-    programs.find((p) => p.program === selectedProgram) || programs[0];
+  const currentProgram = programs[0];
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("fr-FR", {
@@ -102,28 +94,36 @@ export function ProgramEngagementTable({
   return (
     <Card className="border-border/50">
       <CardHeader>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <CardTitle>Program Engagement Details</CardTitle>
-            <CardDescription>
-              Select a program to view its budget execution
-            </CardDescription>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base sm:text-lg">
+                Program Engagement Details
+              </CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1">
+                Select a program to view its budget execution
+              </CardDescription>
+            </div>
+            <div className="w-full sm:w-auto shrink-0">
+              <ProgramSelector
+                programs={programOptions}
+                currentProgramId={programId?.toString()}
+              />
+            </div>
           </div>
-          <ProgramSelector
-            programs={programOptions}
-            currentProgramId={programId?.toString()}
-          />
         </div>
       </CardHeader>
       <CardContent>
         {currentProgram ? (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Program Header */}
-            <div className="bg-muted/30 p-4 rounded-lg border">
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <span className="text-sm text-muted-foreground">Program</span>
-                  <h3 className="text-xl font-bold font-mono">
+            <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <div className="min-w-0 flex-1">
+                  <span className="text-xs sm:text-sm text-muted-foreground">
+                    Program
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-bold font-mono truncate">
                     {currentProgram.program}
                   </h3>
                 </div>
@@ -135,45 +135,45 @@ export function ProgramEngagementTable({
                         ? "default"
                         : "secondary"
                   }
-                  className="text-lg px-3 py-1"
+                  className="text-sm sm:text-lg px-2 sm:px-3 py-1 whitespace-nowrap shrink-0"
                 >
                   {currentProgram.executionRate.toFixed(1)}%
                 </Badge>
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                 {currentProgram.programName}
               </p>
             </div>
 
             {/* Budget Breakdown */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-900">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="bg-blue-50 dark:bg-blue-950/20 p-3 sm:p-4 rounded-lg border border-blue-200 dark:border-blue-900">
                 <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
                   Authorized (AE)
                 </div>
-                <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 tabular-nums">
+                <div className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-300 tabular-nums">
                   {formatCompact(currentProgram.ae)}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs text-muted-foreground mt-1 truncate">
                   {formatCurrency(currentProgram.ae)} FCFA
                 </div>
               </div>
 
-              <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-900">
+              <div className="bg-green-50 dark:bg-green-950/20 p-3 sm:p-4 rounded-lg border border-green-200 dark:border-green-900">
                 <div className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">
                   Engaged
                 </div>
-                <div className="text-2xl font-bold text-green-700 dark:text-green-300 tabular-nums">
+                <div className="text-xl sm:text-2xl font-bold text-green-700 dark:text-green-300 tabular-nums">
                   {formatCompact(currentProgram.engaged)}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs text-muted-foreground mt-1 truncate">
                   {formatCurrency(currentProgram.engaged)} FCFA
                 </div>
               </div>
 
               <div
                 className={cn(
-                  "p-4 rounded-lg border",
+                  "p-3 sm:p-4 rounded-lg border",
                   currentProgram.disponible < 0
                     ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900"
                     : "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900",
@@ -191,7 +191,7 @@ export function ProgramEngagementTable({
                 </div>
                 <div
                   className={cn(
-                    "text-2xl font-bold tabular-nums",
+                    "text-xl sm:text-2xl font-bold tabular-nums",
                     currentProgram.disponible < 0
                       ? "text-red-700 dark:text-red-300"
                       : "text-amber-700 dark:text-amber-300",
@@ -199,7 +199,7 @@ export function ProgramEngagementTable({
                 >
                   {formatCompact(Math.abs(currentProgram.disponible))}
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-xs text-muted-foreground mt-1 truncate">
                   {formatCurrency(Math.abs(currentProgram.disponible))} FCFA
                 </div>
               </div>
@@ -207,9 +207,11 @@ export function ProgramEngagementTable({
 
             {/* Execution Progress */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">Execution Progress</span>
-                <span className="text-muted-foreground">
+              <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                <span className="font-medium whitespace-nowrap">
+                  Execution Progress
+                </span>
+                <span className="text-muted-foreground truncate">
                   {formatCurrency(currentProgram.engaged)} /{" "}
                   {formatCurrency(currentProgram.ae)} FCFA
                 </span>
@@ -217,7 +219,7 @@ export function ProgramEngagementTable({
               <Progress
                 value={Math.min(currentProgram.executionRate, 100)}
                 className={cn(
-                  "h-3",
+                  "h-2 sm:h-3",
                   currentProgram.executionRate > 95
                     ? "[&>div]:bg-red-600"
                     : currentProgram.executionRate > 90
@@ -236,7 +238,7 @@ export function ProgramEngagementTable({
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-8 text-muted-foreground text-sm">
             No program data available
           </div>
         )}
