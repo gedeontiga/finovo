@@ -39,7 +39,7 @@ interface ProgramEngagementTableProps {
   programId: number | undefined;
 }
 
-export async function ProgramEngagementTable({
+export function ProgramEngagementTable({
   data,
   allPrograms,
   programId,
