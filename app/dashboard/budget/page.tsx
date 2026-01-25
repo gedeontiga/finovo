@@ -8,7 +8,7 @@ import {
   adminUnits,
   tasks,
 } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { getFormOptions } from "@/actions/budget-actions";
 import { BudgetUploader } from "@/views/dashboard/budget/budget-upload-button";
 import {
@@ -19,71 +19,93 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { BudgetTable } from "./budget-table";
-import {
-  IconDatabase,
-  IconFileSpreadsheet,
-  IconTrendingUp,
-  IconAlertTriangle,
-} from "@tabler/icons-react";
+import { IconFileSpreadsheet } from "@tabler/icons-react";
 import { EngagementPieChart } from "@/views/dashboard/budget/pie-graph";
 import { ProgramEngagementTable } from "@/views/dashboard/programs/components/program-engagement-table";
 import { CreateEngagementForm } from "@/views/dashboard/budget/create-budget-form";
 
-export default async function BudgetPage() {
-  const allData = await db
-    .select({
-      id: budgetLines.id,
-      program: programs.code,
-      programName: programs.name,
-      action: actions.code,
-      actionName: actions.name,
-      activity: activities.code,
-      activityName: activities.name,
-      taskName: tasks.name,
-      adminCode: adminUnits.code,
-      adminName: adminUnits.name,
-      paragraph: budgetLines.paragraphCode,
-      paragraphName: budgetLines.paragraphName,
-      ae: budgetLines.ae,
-      cp: budgetLines.cp,
-      engaged: budgetLines.engaged,
-    })
-    .from(budgetLines)
-    .innerJoin(tasks, eq(budgetLines.taskId, tasks.id))
-    .innerJoin(activities, eq(tasks.activityId, activities.id))
-    .innerJoin(actions, eq(activities.actionId, actions.id))
-    .innerJoin(programs, eq(actions.programId, programs.id))
-    .leftJoin(adminUnits, eq(budgetLines.adminUnitId, adminUnits.id))
-    .orderBy(programs.code, actions.code, activities.code);
+export default async function BudgetPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ programId?: string }>;
+}) {
+  const resolvedParams = await searchParams;
+  const programId = resolvedParams.programId
+    ? parseInt(resolvedParams.programId)
+    : undefined;
 
-  const data = allData.map((r) => {
-    const ae = parseFloat(r.ae || "0");
-    const cp = parseFloat(r.cp || "0");
-    const engaged = parseFloat(r.engaged || "0");
-    return {
-      ...r,
-      ae,
-      cp,
-      engaged,
-      executionRate: ae > 0 ? (engaged / ae) * 100 : 0,
-      disponible: ae - engaged,
-    };
-  });
+  // Fetch the selected program info (or first program if none selected)
+  const selectedProgram = programId
+    ? await db.query.programs.findFirst({
+        where: eq(programs.id, programId),
+      })
+    : await db.query.programs.findFirst();
 
-  const totalAE = data.reduce((sum, item) => sum + item.ae, 0);
-  const totalCP = data.reduce((sum, item) => sum + item.cp, 0);
-  const totalEngaged = data.reduce((sum, item) => sum + item.engaged, 0);
-  const avgExecutionRate = totalAE > 0 ? (totalEngaged / totalAE) * 100 : 0;
-  const highRiskLines = data.filter((item) => item.executionRate > 90).length;
+  // Fetch budget data for the selected program
+  const programBudgetData = selectedProgram
+    ? await db
+        .select({
+          totalAE: sql<string>`COALESCE(SUM(CAST(${budgetLines.ae} AS NUMERIC)), 0)`,
+          totalEngaged: sql<string>`COALESCE(SUM(CAST(${budgetLines.engaged} AS NUMERIC)), 0)`,
+        })
+        .from(budgetLines)
+        .innerJoin(tasks, eq(budgetLines.taskId, tasks.id))
+        .innerJoin(activities, eq(tasks.activityId, activities.id))
+        .innerJoin(actions, eq(activities.actionId, actions.id))
+        .where(eq(actions.programId, selectedProgram.id))
+    : [];
+
+  const programAE = parseFloat(programBudgetData[0]?.totalAE || "0");
+  const programEngaged = parseFloat(programBudgetData[0]?.totalEngaged || "0");
+
+  // Fetch all budget lines for the selected program
+  const budgetLinesData = selectedProgram
+    ? await db
+        .select({
+          id: budgetLines.id,
+          program: actions.code,
+          programName: programs.name,
+          action: actions.code,
+          actionName: actions.name,
+          activity: activities.code,
+          activityName: activities.name,
+          taskName: tasks.name,
+          adminCode: adminUnits.code,
+          adminName: adminUnits.name,
+          paragraph: budgetLines.paragraphCode,
+          paragraphName: budgetLines.paragraphName,
+          ae: budgetLines.ae,
+          cp: budgetLines.cp,
+          engaged: budgetLines.engaged,
+        })
+        .from(budgetLines)
+        .innerJoin(tasks, eq(budgetLines.taskId, tasks.id))
+        .innerJoin(activities, eq(tasks.activityId, activities.id))
+        .innerJoin(actions, eq(activities.actionId, actions.id))
+        .innerJoin(programs, eq(actions.programId, programs.id))
+        .leftJoin(adminUnits, eq(budgetLines.adminUnitId, adminUnits.id))
+        .where(eq(actions.programId, selectedProgram.id))
+    : [];
+
+  // Convert string values to numbers
+  const data = budgetLinesData.map((line) => ({
+    ...line,
+    ae: parseFloat(line.ae),
+    cp: parseFloat(line.cp),
+    engaged: parseFloat(line.engaged),
+  }));
+
+  // Prepare engagement table data (only for selected program)
+  const engagementTableData = [
+    {
+      program: selectedProgram?.code || "",
+      programName: selectedProgram?.name || "",
+      ae: programAE,
+      engaged: programEngaged,
+    },
+  ];
 
   const formOptions = await getFormOptions();
-
-  const formatCompact = (n: number) =>
-    new Intl.NumberFormat("fr-FR", {
-      notation: "compact",
-      compactDisplay: "short",
-      maximumFractionDigits: 1,
-    }).format(n);
 
   return (
     <PageContainer>
@@ -111,8 +133,13 @@ export default async function BudgetPage() {
 
         {/* Engagement Overview */}
         <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-          <EngagementPieChart totalAE={totalAE} totalEngaged={totalEngaged} />
-          <ProgramEngagementTable data={data} />
+          <EngagementPieChart
+            totalAE={programAE}
+            totalEngaged={programEngaged}
+            programCode={selectedProgram?.code}
+            programName={selectedProgram?.name}
+          />
+          <ProgramEngagementTable data={engagementTableData} />
         </div>
 
         {/* Data Table */}

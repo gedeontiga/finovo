@@ -167,8 +167,8 @@ export function DataTable<TData>({
     <>
       <div className="w-full space-y-4">
         <div className="relative w-full border rounded-md bg-background overflow-hidden">
-          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-22rem)] scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-            <table className="w-full caption-bottom text-sm relative">
+          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-22rem)] scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent -mx-px">
+            <table className="w-full min-w-160 caption-bottom text-sm relative">
               <thead className="sticky top-0 z-20 bg-muted/95 backdrop-blur shadow-sm">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr
