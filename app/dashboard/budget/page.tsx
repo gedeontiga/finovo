@@ -34,12 +34,22 @@ export default async function BudgetPage({
     ? parseInt(resolvedParams.programId)
     : undefined;
 
+  // Fetch all programs for the selector
+  const allPrograms = await db
+    .select({
+      id: programs.id,
+      code: programs.code,
+      name: programs.name,
+    })
+    .from(programs)
+    .orderBy(programs.code);
+
   // Fetch the selected program info (or first program if none selected)
   const selectedProgram = programId
     ? await db.query.programs.findFirst({
         where: eq(programs.id, programId),
       })
-    : await db.query.programs.findFirst();
+    : allPrograms[0] || null;
 
   // Fetch budget data for the selected program
   const programBudgetData = selectedProgram
@@ -96,14 +106,16 @@ export default async function BudgetPage({
   }));
 
   // Prepare engagement table data (only for selected program)
-  const engagementTableData = [
-    {
-      program: selectedProgram?.code || "",
-      programName: selectedProgram?.name || "",
-      ae: programAE,
-      engaged: programEngaged,
-    },
-  ];
+  const engagementTableData = selectedProgram
+    ? [
+        {
+          program: selectedProgram.code || "",
+          programName: selectedProgram.name || "",
+          ae: programAE,
+          engaged: programEngaged,
+        },
+      ]
+    : [];
 
   const formOptions = await getFormOptions();
 
@@ -139,7 +151,11 @@ export default async function BudgetPage({
             programCode={selectedProgram?.code}
             programName={selectedProgram?.name}
           />
-          <ProgramEngagementTable data={engagementTableData} />
+          <ProgramEngagementTable
+            data={engagementTableData}
+            allPrograms={allPrograms}
+            programId={selectedProgram?.id}
+          />
         </div>
 
         {/* Data Table */}
