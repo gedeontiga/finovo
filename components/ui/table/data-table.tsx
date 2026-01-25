@@ -1,11 +1,11 @@
 "use client";
 
-import { type Table as TanstackTable, flexRender } from '@tanstack/react-table';
-import { useState, useRef, useEffect } from 'react';
-import { DataTablePagination } from '@/components/ui/table/data-table-pagination';
-import { cn } from '@/lib/utils';
-import { IconTrash } from '@tabler/icons-react';
-import { Button } from '@/components/ui/button';
+import { type Table as TanstackTable, flexRender } from "@tanstack/react-table";
+import { useState, useRef, useEffect } from "react";
+import { DataTablePagination } from "@/components/ui/table/data-table-pagination";
+import { cn } from "@/lib/utils";
+import { IconTrash } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +15,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 interface DataTableProps<TData> {
   table: TanstackTable<TData>;
@@ -28,7 +28,7 @@ function SwipeableTableRow<TData>({
   row,
   onRowClick,
   onRowDelete,
-  isMobile
+  isMobile,
 }: {
   row: any;
   onRowClick?: (row: TData, e: React.MouseEvent) => void;
@@ -47,7 +47,7 @@ function SwipeableTableRow<TData>({
     isSwiping.current = false;
     isScrolling.current = false;
     if (rowRef.current) {
-      rowRef.current.style.transition = 'none';
+      rowRef.current.style.transition = "none";
     }
   };
 
@@ -81,15 +81,15 @@ function SwipeableTableRow<TData>({
   const handleTouchEnd = () => {
     if (!isMobile || !onRowDelete || !rowRef.current) return;
 
-    rowRef.current.style.transition = 'transform 0.3s ease-out';
+    rowRef.current.style.transition = "transform 0.3s ease-out";
     const currentTransform = new WebKitCSSMatrix(
-      window.getComputedStyle(rowRef.current).transform
+      window.getComputedStyle(rowRef.current).transform,
     ).m41;
 
     if (currentTransform < -DELETE_THRESHOLD) {
       onRowDelete(row.original);
     }
-    rowRef.current.style.transform = 'translateX(0)';
+    rowRef.current.style.transform = "translateX(0)";
     isSwiping.current = false;
     isScrolling.current = false;
   };
@@ -97,10 +97,10 @@ function SwipeableTableRow<TData>({
   return (
     <tr
       ref={rowRef}
-      data-state={row.getIsSelected() && 'selected'}
+      data-state={row.getIsSelected() && "selected"}
       className={cn(
-        'group relative transition-colors duration-200 border-b hover:bg-muted/50 data-[state=selected]:bg-muted',
-        onRowClick && 'cursor-pointer active:bg-muted'
+        "group relative transition-colors duration-200 border-b hover:bg-muted/50 data-[state=selected]:bg-muted",
+        onRowClick && "cursor-pointer active:bg-muted",
       )}
       onClick={(e) => onRowClick?.(row.original, e)}
       onTouchStart={handleTouchStart}
@@ -108,24 +108,24 @@ function SwipeableTableRow<TData>({
       onTouchEnd={handleTouchEnd}
     >
       {onRowDelete && (
-        <td className='w-12 p-0 sticky left-0 bg-background z-10 border-r'>
-          <div className='flex items-center justify-center h-full'>
+        <td className="w-12 p-0 sticky left-0 bg-background z-10 border-r">
+          <div className="flex items-center justify-center h-full">
             <Button
-              variant='ghost'
-              size='icon'
-              className='h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors'
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onRowDelete(row.original);
               }}
             >
-              <IconTrash className='h-4 w-4' />
+              <IconTrash className="h-4 w-4" />
             </Button>
           </div>
         </td>
       )}
       {row.getVisibleCells().map((cell: any) => (
-        <td key={cell.id} className='p-2 align-middle'>
+        <td key={cell.id} className="p-2 align-middle">
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </td>
       ))}
@@ -146,8 +146,8 @@ export function DataTable<TData>({
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const handleDeleteRequest = (row: TData) => {
@@ -165,30 +165,40 @@ export function DataTable<TData>({
 
   return (
     <>
-      <div className='w-full space-y-4'>
-        <div className='relative w-full border rounded-md bg-background overflow-hidden'>
-          <div className='overflow-x-auto overflow-y-auto max-h-[calc(100vh-22rem)] scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent'>
-            <table className='w-full caption-bottom text-sm relative table-fixed md:table-auto'>
-              <thead className='sticky top-0 z-20 bg-muted/95 backdrop-blur shadow-sm'>
+      <div className="w-full space-y-4">
+        <div className="relative w-full border rounded-md bg-background overflow-hidden">
+          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-22rem)] scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+            <table className="w-full caption-bottom text-sm relative">
+              <thead className="sticky top-0 z-20 bg-muted/95 backdrop-blur shadow-sm">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id} className='border-b hover:bg-transparent'>
+                  <tr
+                    key={headerGroup.id}
+                    className="border-b hover:bg-transparent"
+                  >
                     {onRowDelete && (
-                      <th className='w-12 sticky left-0 bg-muted/95 backdrop-blur z-30 border-r h-10 px-2 text-left align-middle font-medium'>
-                        <span className='sr-only'>Actions</span>
+                      <th className="w-12 sticky left-0 bg-muted/95 backdrop-blur z-30 border-r h-10 px-2 text-left align-middle font-medium">
+                        <span className="sr-only">Actions</span>
                       </th>
                     )}
                     {headerGroup.headers.map((header) => (
                       <th
                         key={header.id}
                         colSpan={header.colSpan}
-                        className='text-foreground h-10 px-2 text-left align-middle font-medium'
+                        style={{
+                          minWidth: header.column.columnDef.minSize,
+                          width:
+                            header.column.getSize() !== 150
+                              ? header.column.getSize()
+                              : "auto",
+                        }}
+                        className="text-foreground h-10 px-2 text-left align-middle font-medium"
                       >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
                       </th>
                     ))}
                   </tr>
@@ -196,24 +206,30 @@ export function DataTable<TData>({
               </thead>
               <tbody>
                 {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <SwipeableTableRow
-                      key={row.id}
-                      row={row}
-                      onRowClick={onRowClick}
-                      onRowDelete={handleDeleteRequest}
-                      isMobile={isMobile}
-                    />
-                  ))
+                  table
+                    .getRowModel()
+                    .rows.map((row) => (
+                      <SwipeableTableRow
+                        key={row.id}
+                        row={row}
+                        onRowClick={onRowClick}
+                        onRowDelete={handleDeleteRequest}
+                        isMobile={isMobile}
+                      />
+                    ))
                 ) : (
                   <tr>
                     <td
-                      colSpan={table.getAllColumns().length + (onRowDelete ? 1 : 0)}
-                      className='h-24 text-center p-2 align-middle'
+                      colSpan={
+                        table.getAllColumns().length + (onRowDelete ? 1 : 0)
+                      }
+                      className="h-24 text-center p-2 align-middle"
                     >
-                      <div className='flex flex-col items-center justify-center gap-2 text-muted-foreground'>
-                        <p className='text-sm font-medium'>No results found</p>
-                        <p className='text-xs'>Try adjusting your filters or search terms</p>
+                      <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <p className="text-sm font-medium">No results found</p>
+                        <p className="text-xs">
+                          Try adjusting your filters or search terms
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -231,14 +247,15 @@ export function DataTable<TData>({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this record.
+              This action cannot be undone. This will permanently delete this
+              record.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { Label, Pie, PieChart } from 'recharts';
 import {
   Card,
@@ -16,58 +15,32 @@ import {
   ChartTooltipContent
 } from '@/components/ui/chart';
 
-interface PieGraphProps {
-  data: Array<{
-    browser: string;
-    visitors: number;
-    fill: string;
-  }>;
+interface EngagementPieChartProps {
+  totalAE: number;
+  totalEngaged: number;
 }
 
-// Theme-aware color getter
-const getThemeColor = (variable: string, fallback: string): string => {
-  if (typeof window === 'undefined') return fallback;
+export function EngagementPieChart({ totalAE, totalEngaged }: EngagementPieChartProps) {
+  const available = Math.max(0, totalAE - totalEngaged);
 
-  try {
-    const root = document.documentElement;
-    const value = getComputedStyle(root).getPropertyValue(variable).trim();
-    return value ? `hsl(${value})` : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
-export function BudgetPieGraph({ data }: PieGraphProps) {
-  const [chartData, setChartData] = React.useState(data);
-
-  // Update colors when component mounts
-  React.useEffect(() => {
-    const colors = [
-      getThemeColor('--chart-1', '#3b82f6'),
-      getThemeColor('--chart-2', '#10b981'),
-      getThemeColor('--chart-3', '#8b5cf6'),
-      getThemeColor('--chart-4', '#f59e0b'),
-      getThemeColor('--chart-5', '#ec4899'),
-      getThemeColor('--chart-6', '#ef4444')
-    ];
-
-    const updatedData = data.map((item, index) => ({
-      ...item,
-      fill: colors[index % colors.length]
-    }));
-
-    setChartData(updatedData);
-  }, [data]);
+  const chartData = [
+    {
+      name: 'Engaged',
+      value: totalEngaged,
+      fill: 'hsl(var(--chart-2))'
+    },
+    {
+      name: 'Available',
+      value: available,
+      fill: 'hsl(var(--chart-1))'
+    }
+  ];
 
   const chartConfig: ChartConfig = {
-    visitors: {
-      label: 'Budget (XAF)'
+    value: {
+      label: 'Amount (FCFA)'
     }
   };
-
-  const totalVisitors = React.useMemo(() => {
-    return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
-  }, [chartData]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('fr-FR', {
@@ -76,17 +49,22 @@ export function BudgetPieGraph({ data }: PieGraphProps) {
       maximumFractionDigits: 1
     }).format(value);
 
+  const executionRate = totalAE > 0 ? (totalEngaged / totalAE) * 100 : 0;
+
   return (
-    <Card className='@container/card'>
+    <Card className='@container/card border-border/50'>
       <CardHeader>
-        <CardTitle>Budget by Administrative Unit</CardTitle>
+        <CardTitle className='flex items-center justify-between'>
+          <span>Budget Execution Overview</span>
+          <span className={`text-sm font-normal ${executionRate > 95 ? 'text-red-600 dark:text-red-400' :
+            executionRate > 90 ? 'text-amber-600 dark:text-amber-400' :
+              'text-green-600 dark:text-green-400'
+            }`}>
+            {executionRate.toFixed(1)}% Executed
+          </span>
+        </CardTitle>
         <CardDescription>
-          <span className='hidden @[540px]/card:block'>
-            Distribution of authorized budget across top units
-          </span>
-          <span className='@[540px]/card:hidden'>
-            Unit distribution
-          </span>
+          Distribution of authorized budget
         </CardDescription>
       </CardHeader>
       <CardContent className='px-2 pt-4 sm:px-6 sm:pt-6'>
@@ -102,11 +80,14 @@ export function BudgetPieGraph({ data }: PieGraphProps) {
                   hideLabel
                   formatter={(value, name) => (
                     <>
-                      <div className='text-xs text-muted-foreground'>
-                        {String(name).toUpperCase()}
+                      <div className='text-xs text-muted-foreground capitalize'>
+                        {String(name)}
                       </div>
                       <div className='font-bold'>
-                        {formatCurrency(Number(value))} XAF
+                        {formatCurrency(Number(value))} FCFA
+                      </div>
+                      <div className='text-xs text-muted-foreground'>
+                        {((Number(value) / totalAE) * 100).toFixed(1)}% of total
                       </div>
                     </>
                   )}
@@ -115,8 +96,8 @@ export function BudgetPieGraph({ data }: PieGraphProps) {
             />
             <Pie
               data={chartData}
-              dataKey='visitors'
-              nameKey='browser'
+              dataKey='value'
+              nameKey='name'
               innerRadius={60}
               strokeWidth={2}
               stroke='hsl(var(--background))'
@@ -136,14 +117,14 @@ export function BudgetPieGraph({ data }: PieGraphProps) {
                           y={viewBox.cy}
                           className='fill-foreground text-3xl font-bold'
                         >
-                          {formatCurrency(totalVisitors)}
+                          {formatCurrency(totalAE)}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
                           className='fill-muted-foreground text-sm'
                         >
-                          Total XAF
+                          Total AE
                         </tspan>
                       </text>
                     );
@@ -153,6 +134,24 @@ export function BudgetPieGraph({ data }: PieGraphProps) {
             </Pie>
           </PieChart>
         </ChartContainer>
+
+        {/* Legend */}
+        <div className='mt-4 grid grid-cols-2 gap-4'>
+          <div className='flex items-center gap-2'>
+            <div className='h-3 w-3 rounded-full' style={{ backgroundColor: 'hsl(var(--chart-2))' }} />
+            <div className='flex flex-col'>
+              <span className='text-xs font-medium'>Engaged</span>
+              <span className='text-sm font-bold'>{formatCurrency(totalEngaged)} FCFA</span>
+            </div>
+          </div>
+          <div className='flex items-center gap-2'>
+            <div className='h-3 w-3 rounded-full' style={{ backgroundColor: 'hsl(var(--chart-1))' }} />
+            <div className='flex flex-col'>
+              <span className='text-xs font-medium'>Available</span>
+              <span className='text-sm font-bold'>{formatCurrency(available)} FCFA</span>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

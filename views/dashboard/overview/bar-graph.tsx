@@ -44,7 +44,8 @@ export function BarGraph({ data }: BarGraphProps) {
     program: item.code,
     name: item.name,
     ae: item.ae,
-    engaged: item.engaged
+    engaged: item.engaged,
+    available: Math.max(0, item.ae - item.engaged)
   }));
 
   const total = React.useMemo(
@@ -143,12 +144,52 @@ export function BarGraph({ data }: BarGraphProps) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  className='w-52 border-border/50 shadow-lg'
+                  className='w-64 border-border/50 shadow-lg'
                   labelFormatter={(value, payload) => {
                     const item = payload?.[0]?.payload;
-                    return item ? `Program ${value}: ${item.name}` : value;
+                    return item ? (
+                      <div className='space-y-1'>
+                        <div className='font-bold'>Program {value}</div>
+                        <div className='text-xs text-muted-foreground line-clamp-2'>
+                          {item.name}
+                        </div>
+                      </div>
+                    ) : value;
                   }}
-                  formatter={(value) => formatCurrency(Number(value)) + ' FCFA'}
+                  formatter={(value, name, item) => {
+                    const payload = item.payload;
+                    return (
+                      <div className='space-y-2 w-full'>
+                        <div className='flex items-center justify-between gap-4'>
+                          <span className='text-muted-foreground'>Engaged:</span>
+                          <span className='font-bold text-green-600 dark:text-green-400'>
+                            {formatCurrency(payload.engaged)} FCFA
+                          </span>
+                        </div>
+                        <div className='flex items-center justify-between gap-4'>
+                          <span className='text-muted-foreground'>Available:</span>
+                          <span className='font-bold text-blue-600 dark:text-blue-400'>
+                            {formatCurrency(payload.available)} FCFA
+                          </span>
+                        </div>
+                        <div className='border-t pt-2 flex items-center justify-between gap-4'>
+                          <span className='text-muted-foreground'>Total AE:</span>
+                          <span className='font-bold'>
+                            {formatCurrency(payload.ae)} FCFA
+                          </span>
+                        </div>
+                        <div className='flex items-center justify-between gap-4'>
+                          <span className='text-muted-foreground'>Execution:</span>
+                          <span className={`font-bold ${(payload.engaged / payload.ae * 100) > 95 ? 'text-red-600 dark:text-red-400' :
+                            (payload.engaged / payload.ae * 100) > 90 ? 'text-amber-600 dark:text-amber-400' :
+                              'text-green-600 dark:text-green-400'
+                            }`}>
+                            {((payload.engaged / payload.ae) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
               }
             />

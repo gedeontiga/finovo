@@ -28,45 +28,48 @@ const formatCurrency = (value: number) =>
 		style: "decimal",
 		minimumFractionDigits: 0,
 		maximumFractionDigits: 0,
-	}).format(value);
+	}).format(value || 0);
 
-// Helper function to safely get string value
-const safeString = (value: string | null | undefined, fallback: string = "-"): string => {
-	return value ?? fallback;
+const safeString = (value: string | null | undefined, fallback: string = "N/A"): string => {
+	if (value === null || value === undefined || value === '') return fallback;
+	return String(value);
 };
 
-// Global search filter - searches across all text fields
+const safeNumber = (value: number | null | undefined): number => {
+	if (value === null || value === undefined || isNaN(value)) return 0;
+	return Number(value);
+};
+
 const globalFilterFn = (row: any, columnId: string, filterValue: string) => {
 	const search = String(filterValue).toLowerCase();
 
 	const searchableValues = [
-		row.original.program,
-		row.original.programName,
-		row.original.action,
-		row.original.actionName,
-		row.original.activity,
-		row.original.activityName,
-		row.original.taskName,
-		row.original.adminCode,
-		row.original.adminName,
-		row.original.paragraph,
-		row.original.paragraphName,
-		String(row.original.ae),
-		String(row.original.cp),
-		String(row.original.engaged),
+		safeString(row.original.program, ''),
+		safeString(row.original.programName, ''),
+		safeString(row.original.action, ''),
+		safeString(row.original.actionName, ''),
+		safeString(row.original.activity, ''),
+		safeString(row.original.activityName, ''),
+		safeString(row.original.taskName, ''),
+		safeString(row.original.adminCode, ''),
+		safeString(row.original.adminName, ''),
+		safeString(row.original.paragraph, ''),
+		safeString(row.original.paragraphName, ''),
+		String(safeNumber(row.original.ae)),
+		String(safeNumber(row.original.cp)),
+		String(safeNumber(row.original.engaged)),
 	];
 
 	return searchableValues.some(value =>
-		String(value || '').toLowerCase().includes(search)
+		String(value).toLowerCase().includes(search)
 	);
 };
 
 export const columns: ColumnDef<BudgetLineRow>[] = [
-	// Hidden global search column
 	{
 		id: "globalSearch",
 		accessorFn: (row) =>
-			`${safeString(row.program)} ${safeString(row.programName)} ${safeString(row.action)} ${safeString(row.actionName)} ${safeString(row.activity)} ${safeString(row.activityName)} ${safeString(row.taskName)} ${safeString(row.adminCode)} ${safeString(row.adminName)} ${safeString(row.paragraph)} ${safeString(row.paragraphName)} ${row.ae} ${row.cp} ${row.engaged}`,
+			`${safeString(row.program)} ${safeString(row.programName)} ${safeString(row.action)} ${safeString(row.actionName)} ${safeString(row.activity)} ${safeString(row.activityName)} ${safeString(row.taskName)} ${safeString(row.adminCode)} ${safeString(row.adminName)} ${safeString(row.paragraph)} ${safeString(row.paragraphName)}`,
 		filterFn: globalFilterFn,
 		enableHiding: false,
 		enableSorting: false,
@@ -82,12 +85,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{program}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={programName}>
+					<p className="text-xs text-muted-foreground line-clamp-2" title={programName}>
 						{programName}
 					</p>
 				</div>
 			);
 		},
+		minSize: 140,
+		size: 200,
 		enableSorting: true,
 		enableHiding: true,
 		meta: { label: "Program" },
@@ -103,12 +108,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{action}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={actionName}>
+					<p className="text-xs text-muted-foreground line-clamp-2" title={actionName}>
 						{actionName}
 					</p>
 				</div>
 			);
 		},
+		minSize: 140,
+		size: 200,
 		enableSorting: true,
 		enableHiding: true,
 		meta: { label: "Action" },
@@ -124,12 +131,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{activity}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={activityName}>
+					<p className="text-xs text-muted-foreground line-clamp-2" title={activityName}>
 						{activityName}
 					</p>
 				</div>
 			);
 		},
+		minSize: 150,
+		size: 220,
 		enableSorting: true,
 		enableHiding: true,
 		meta: { label: "Activity" },
@@ -145,12 +154,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 					<span className="font-mono text-xs font-semibold block whitespace-nowrap">
 						{code}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={name}>
+					<p className="text-xs text-muted-foreground line-clamp-2" title={name}>
 						{name}
 					</p>
 				</div>
 			);
 		},
+		minSize: 120,
+		size: 180,
 		enableSorting: true,
 		enableHiding: true,
 		meta: { label: "Admin" },
@@ -166,12 +177,14 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 					<span className="font-mono text-xs font-bold text-primary block whitespace-nowrap">
 						{paragraph}
 					</span>
-					<p className="text-xs text-muted-foreground line-clamp-2 wrap-break-words" title={paragraphName}>
+					<p className="text-xs text-muted-foreground line-clamp-2" title={paragraphName}>
 						{paragraphName}
 					</p>
 				</div>
 			);
 		},
+		minSize: 200,
+		size: 280,
 		enableSorting: true,
 		enableHiding: true,
 		meta: { label: "Paragraph" },
@@ -185,9 +198,11 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 		),
 		cell: ({ row }) => (
 			<div className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold min-w-25 whitespace-nowrap pr-4">
-				{formatCurrency(row.original.ae || 0)}
+				{formatCurrency(safeNumber(row.original.ae))}
 			</div>
 		),
+		minSize: 100,
+		size: 120,
 		enableHiding: true,
 		meta: { label: "AE" },
 	},
@@ -199,8 +214,8 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 			</div>
 		),
 		cell: ({ row }) => {
-			const val = row.original.engaged || 0;
-			const ae = row.original.ae || 0;
+			const val = safeNumber(row.original.engaged);
+			const ae = safeNumber(row.original.ae);
 			const ratio = ae > 0 ? (val / ae) * 100 : 0;
 
 			return (
@@ -220,6 +235,8 @@ export const columns: ColumnDef<BudgetLineRow>[] = [
 				</div>
 			);
 		},
+		minSize: 120,
+		size: 140,
 		enableHiding: true,
 		meta: { label: "Engaged" },
 	},
