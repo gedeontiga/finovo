@@ -1,14 +1,8 @@
 "use client";
 
-import { MantineProvider, createTheme } from "@mantine/core";
+import { MantineProvider } from "@mantine/core";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-
-const theme = createTheme({
-  fontFamily: "inherit",
-  primaryColor: "blue",
-  defaultRadius: "md",
-});
 
 export function MantineThemeProvider({
   children,
@@ -24,12 +18,11 @@ export function MantineThemeProvider({
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
-    return <MantineProvider theme={theme}>{children}</MantineProvider>;
+    return <MantineProvider>{children}</MantineProvider>;
   }
 
   return (
     <MantineProvider
-      theme={theme}
       forceColorScheme={resolvedTheme === "dark" ? "dark" : "light"}
     >
       {children}

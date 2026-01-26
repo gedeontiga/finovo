@@ -165,8 +165,11 @@ export function MantineDataTable<T extends Record<string, any>>({
           </div>
         )}
 
-        <div className="relative w-full overflow-hidden rounded-lg border border-border">
-          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-20rem)]">
+        <div
+          className="relative w-full rounded-lg border border-border"
+          style={{ height: "calc(100vh - 400px)", minHeight: "400px" }}
+        >
+          <div className="absolute inset-0 overflow-auto">
             <DataTable<T>
               columns={enhancedColumns}
               records={paginatedData}

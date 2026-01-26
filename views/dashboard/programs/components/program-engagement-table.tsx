@@ -11,7 +11,6 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ProgramSelector } from "../../budget/components/program-selector";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProgramEngagement {
   program: string;
@@ -92,15 +91,15 @@ export function ProgramEngagementTable({
 
   return (
     <Card className="border-border/50 h-full flex flex-col">
-      <CardHeader className="px-3 py-4 sm:px-6 sm:py-6">
-        <div className="flex flex-col gap-3 sm:gap-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+      <CardHeader className="px-3 py-3 sm:px-6 sm:py-4 shrink-0">
+        <div className="flex flex-col gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div className="min-w-0 flex-1 w-full sm:w-auto">
-              <CardTitle className="text-sm sm:text-base md:text-lg truncate">
+              <CardTitle className="text-sm sm:text-base truncate">
                 Program Engagement Details
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm mt-1 line-clamp-1">
-                Select a program to view its budget execution
+              <CardDescription className="text-xs sm:text-sm mt-0.5 line-clamp-1">
+                Select a program to view budget execution
               </CardDescription>
             </div>
             <div className="w-full sm:w-auto sm:min-w-50 md:min-w-62.5 shrink-0">
@@ -112,134 +111,132 @@ export function ProgramEngagementTable({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="px-3 pb-4 sm:px-6 sm:pb-6 flex-1 overflow-hidden">
+      <CardContent className="px-3 pb-3 sm:px-6 sm:pb-4 flex-1 overflow-auto min-h-0">
         {currentProgram ? (
-          <ScrollArea className="h-full max-h-125 sm:max-h-none">
-            <div className="space-y-4 sm:space-y-6 pr-3 sm:pr-0">
-              {/* Program Header */}
-              <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border">
-                <div className="flex items-start sm:items-center justify-between mb-2 gap-2">
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-muted-foreground">
-                      Program
-                    </span>
-                    <h3 className="text-base sm:text-lg md:text-xl font-bold font-mono truncate">
-                      {currentProgram.program}
-                    </h3>
-                  </div>
-                  <Badge
-                    variant={
-                      currentProgram.executionRate > 95
-                        ? "destructive"
-                        : currentProgram.executionRate > 90
-                          ? "default"
-                          : "secondary"
-                    }
-                    className="text-xs sm:text-sm md:text-base px-2 py-0.5 sm:px-3 sm:py-1 whitespace-nowrap shrink-0"
-                  >
-                    {currentProgram.executionRate.toFixed(1)}%
-                  </Badge>
+          <div className="space-y-3 sm:space-y-4 h-full">
+            {/* Program Header */}
+            <div className="bg-muted/30 p-2.5 sm:p-3 md:p-4 rounded-lg border shrink-0">
+              <div className="flex items-start justify-between mb-1.5 sm:mb-2 gap-2">
+                <div className="min-w-0 flex-1">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
+                    Program
+                  </span>
+                  <h3 className="text-sm sm:text-base md:text-lg font-bold font-mono truncate">
+                    {currentProgram.program}
+                  </h3>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                  {currentProgram.programName}
-                </p>
+                <Badge
+                  variant={
+                    currentProgram.executionRate > 95
+                      ? "destructive"
+                      : currentProgram.executionRate > 90
+                        ? "default"
+                        : "secondary"
+                  }
+                  className="text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 whitespace-nowrap shrink-0"
+                >
+                  {currentProgram.executionRate.toFixed(1)}%
+                </Badge>
+              </div>
+              <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-2">
+                {currentProgram.programName}
+              </p>
+            </div>
+
+            {/* Budget Breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 shrink-0">
+              <div className="bg-blue-50 dark:bg-blue-950/20 p-2.5 sm:p-3 rounded-lg border border-blue-200 dark:border-blue-900 min-w-0">
+                <div className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 font-medium mb-0.5 sm:mb-1 truncate">
+                  Authorized (AE)
+                </div>
+                <div className="text-base sm:text-lg font-bold text-blue-700 dark:text-blue-300 font-mono tabular-nums truncate">
+                  {formatCompact(currentProgram.ae)}
+                </div>
+                <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 sm:mt-1 truncate">
+                  {formatCurrency(currentProgram.ae)} FCFA
+                </div>
               </div>
 
-              {/* Budget Breakdown */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-blue-50 dark:bg-blue-950/20 p-3 sm:p-4 rounded-lg border border-blue-200 dark:border-blue-900">
-                  <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
-                    Authorized (AE)
-                  </div>
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-300 tabular-nums truncate">
-                    {formatCompact(currentProgram.ae)}
-                  </div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">
-                    {formatCurrency(currentProgram.ae)} FCFA
-                  </div>
+              <div className="bg-green-50 dark:bg-green-950/20 p-2.5 sm:p-3 rounded-lg border border-green-200 dark:border-green-900 min-w-0">
+                <div className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 font-medium mb-0.5 sm:mb-1 truncate">
+                  Engaged
                 </div>
-
-                <div className="bg-green-50 dark:bg-green-950/20 p-3 sm:p-4 rounded-lg border border-green-200 dark:border-green-900">
-                  <div className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">
-                    Engaged
-                  </div>
-                  <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-700 dark:text-green-300 tabular-nums truncate">
-                    {formatCompact(currentProgram.engaged)}
-                  </div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">
-                    {formatCurrency(currentProgram.engaged)} FCFA
-                  </div>
+                <div className="text-base sm:text-lg font-bold text-green-700 dark:text-green-300 font-mono tabular-nums truncate">
+                  {formatCompact(currentProgram.engaged)}
                 </div>
+                <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 sm:mt-1 truncate">
+                  {formatCurrency(currentProgram.engaged)} FCFA
+                </div>
+              </div>
 
+              <div
+                className={cn(
+                  "p-2.5 sm:p-3 rounded-lg border min-w-0",
+                  currentProgram.disponible < 0
+                    ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900"
+                    : "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900",
+                )}
+              >
                 <div
                   className={cn(
-                    "p-3 sm:p-4 rounded-lg border",
+                    "text-[10px] sm:text-xs font-medium mb-0.5 sm:mb-1 truncate",
                     currentProgram.disponible < 0
-                      ? "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900"
-                      : "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900",
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-amber-600 dark:text-amber-400",
                   )}
                 >
-                  <div
-                    className={cn(
-                      "text-xs font-medium mb-1",
-                      currentProgram.disponible < 0
-                        ? "text-red-600 dark:text-red-400"
-                        : "text-amber-600 dark:text-amber-400",
-                    )}
-                  >
-                    {currentProgram.disponible < 0 ? "Overrun" : "Available"}
-                  </div>
-                  <div
-                    className={cn(
-                      "text-lg sm:text-xl md:text-2xl font-bold tabular-nums truncate",
-                      currentProgram.disponible < 0
-                        ? "text-red-700 dark:text-red-300"
-                        : "text-amber-700 dark:text-amber-300",
-                    )}
-                  >
-                    {formatCompact(Math.abs(currentProgram.disponible))}
-                  </div>
-                  <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">
-                    {formatCurrency(Math.abs(currentProgram.disponible))} FCFA
-                  </div>
+                  {currentProgram.disponible < 0 ? "Overrun" : "Available"}
                 </div>
-              </div>
-
-              {/* Execution Progress */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                  <span className="font-medium whitespace-nowrap">
-                    Execution Progress
-                  </span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {formatCurrency(currentProgram.engaged)} /{" "}
-                    {formatCurrency(currentProgram.ae)}
-                  </span>
-                </div>
-                <Progress
-                  value={Math.min(currentProgram.executionRate, 100)}
+                <div
                   className={cn(
-                    "h-2 sm:h-3",
-                    currentProgram.executionRate > 95
-                      ? "[&>div]:bg-red-600"
-                      : currentProgram.executionRate > 90
-                        ? "[&>div]:bg-amber-500"
-                        : "[&>div]:bg-green-600",
+                    "text-base sm:text-lg font-bold font-mono tabular-nums truncate",
+                    currentProgram.disponible < 0
+                      ? "text-red-700 dark:text-red-300"
+                      : "text-amber-700 dark:text-amber-300",
                   )}
-                />
-                <p className="text-[10px] sm:text-xs text-muted-foreground">
-                  {currentProgram.executionRate > 95 &&
-                    "Critical: Over 95% executed"}
-                  {currentProgram.executionRate > 90 &&
-                    currentProgram.executionRate <= 95 &&
-                    "Warning: Over 90% executed"}
-                  {currentProgram.executionRate <= 90 && "On track"}
-                </p>
+                >
+                  {formatCompact(Math.abs(currentProgram.disponible))}
+                </div>
+                <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 sm:mt-1 truncate">
+                  {formatCurrency(Math.abs(currentProgram.disponible))} FCFA
+                </div>
               </div>
             </div>
-          </ScrollArea>
+
+            {/* Execution Progress */}
+            <div className="space-y-1.5 sm:space-y-2 shrink-0">
+              <div className="flex items-center justify-between text-[10px] sm:text-xs gap-2">
+                <span className="font-medium whitespace-nowrap">
+                  Execution Progress
+                </span>
+                <span className="text-muted-foreground truncate text-[9px] sm:text-[10px]">
+                  {formatCurrency(currentProgram.engaged)} /{" "}
+                  {formatCurrency(currentProgram.ae)}
+                </span>
+              </div>
+              <Progress
+                value={Math.min(currentProgram.executionRate, 100)}
+                className={cn(
+                  "h-1.5 sm:h-2",
+                  currentProgram.executionRate > 95
+                    ? "[&>div]:bg-red-600"
+                    : currentProgram.executionRate > 90
+                      ? "[&>div]:bg-amber-500"
+                      : "[&>div]:bg-green-600",
+                )}
+              />
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+                {currentProgram.executionRate > 95 &&
+                  "Critical: Over 95% executed"}
+                {currentProgram.executionRate > 90 &&
+                  currentProgram.executionRate <= 95 &&
+                  "Warning: Over 90% executed"}
+                {currentProgram.executionRate <= 90 && "On track"}
+              </p>
+            </div>
+          </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground text-xs sm:text-sm">
+          <div className="h-full flex items-center justify-center text-center text-muted-foreground text-xs sm:text-sm">
             No program data available
           </div>
         )}
