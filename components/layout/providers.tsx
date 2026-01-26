@@ -5,8 +5,7 @@ import { dark } from "@clerk/themes";
 import { useTheme } from "next-themes";
 import React from "react";
 import { ActiveThemeProvider } from "../active-theme";
-// 1. Import MantineProvider
-import { MantineProvider } from "@mantine/core";
+import { MantineThemeProvider } from "./datatable/mantine-provider";
 
 export default function Providers({
   activeThemeValue,
@@ -26,8 +25,7 @@ export default function Providers({
             baseTheme: resolvedTheme === "dark" ? dark : undefined,
           }}
         >
-          {/* 2. Wrap children with MantineProvider */}
-          <MantineProvider>{children}</MantineProvider>
+          <MantineThemeProvider>{children}</MantineThemeProvider>
         </ClerkProvider>
       </ActiveThemeProvider>
     </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Label, Pie, PieChart } from "recharts";
+import { Label, Pie, PieChart, ResponsiveContainer } from "recharts";
 import {
   Card,
   CardContent,
@@ -30,17 +30,16 @@ export function EngagementPieChart({
 }: EngagementPieChartProps) {
   const available = Math.max(0, totalAE - totalEngaged);
 
-  // FIX 1: Use direct color values instead of CSS variables
   const chartData = [
     {
       name: "Engaged",
       value: totalEngaged,
-      fill: "#fe9a00", // Orange/Amber color
+      fill: "#fe9a00",
     },
     {
       name: "Available",
       value: available,
-      fill: "#1449e6", // Blue color
+      fill: "#1449e6",
     },
   ];
 
@@ -67,25 +66,24 @@ export function EngagementPieChart({
 
   const executionRate = totalAE > 0 ? (totalEngaged / totalAE) * 100 : 0;
 
-  // FIX 2: Don't render if there's no data
   if (totalAE === 0) {
     return (
-      <Card className="@container/card border-border/50">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Budget Execution Overview</span>
+      <Card className="border-border/50">
+        <CardHeader className="px-3 py-4 sm:px-6 sm:py-6">
+          <CardTitle className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span className="truncate">Budget Execution Overview</span>
             {programCode && (
-              <span className="text-sm font-normal text-muted-foreground">
+              <span className="text-xs sm:text-sm font-normal text-muted-foreground">
                 {programCode}
               </span>
             )}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm truncate">
             {programName || "Distribution of authorized budget"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-          <div className="flex items-center justify-center h-64 text-muted-foreground">
+        <CardContent className="px-3 sm:px-6">
+          <div className="flex items-center justify-center h-48 sm:h-64 text-muted-foreground text-sm">
             No budget data available
           </div>
         </CardContent>
@@ -94,12 +92,12 @@ export function EngagementPieChart({
   }
 
   return (
-    <Card className="@container/card border-border/50">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>Budget Execution Overview</span>
+    <Card className="border-border/50">
+      <CardHeader className="px-3 py-4 sm:px-6 sm:py-6">
+        <CardTitle className="text-sm sm:text-base flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <span className="truncate">Budget Execution Overview</span>
           <span
-            className={`text-sm font-normal ${
+            className={`text-xs sm:text-sm font-normal whitespace-nowrap ${
               executionRate > 95
                 ? "text-red-600 dark:text-red-400"
                 : executionRate > 90
@@ -110,104 +108,105 @@ export function EngagementPieChart({
             {executionRate.toFixed(1)}% Executed
           </span>
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs sm:text-sm line-clamp-1">
           {programCode
             ? `${programCode} - ${programName || "Program Budget"}`
             : "Distribution of authorized budget"}
         </CardDescription>
       </CardHeader>
-      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square h-62.5"
-        >
-          <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  hideLabel
-                  formatter={(value, name) => (
-                    <>
-                      <div className="text-xs text-muted-foreground capitalize">
-                        {String(name)}
-                      </div>
-                      <div className="font-bold">
-                        {formatCurrency(Number(value))} FCFA
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {((Number(value) / totalAE) * 100).toFixed(1)}% of total
-                      </div>
-                    </>
-                  )}
-                />
-              }
-            />
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="name"
-              innerRadius={60}
-              outerRadius={80}
-              strokeWidth={2}
-              stroke="hsl(var(--background))"
-            >
-              <Label
-                content={({ viewBox }) => {
-                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    return (
-                      <text
-                        x={viewBox.cx}
-                        y={viewBox.cy}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                      >
-                        <tspan
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          className="fill-foreground text-3xl font-bold"
-                        >
-                          {formatCurrency(totalAE)}
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 24}
-                          className="fill-muted-foreground text-sm"
-                        >
-                          Total AE
-                        </tspan>
-                      </text>
-                    );
+      <CardContent className="px-3 pb-4 sm:px-6 sm:pb-6">
+        <div className="w-full h-48 sm:h-64 md:h-72">
+          <ChartContainer config={chartConfig} className="w-full h-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent
+                      hideLabel
+                      formatter={(value, name) => (
+                        <>
+                          <div className="text-xs text-muted-foreground capitalize">
+                            {String(name)}
+                          </div>
+                          <div className="font-bold text-sm">
+                            {formatCurrency(Number(value))} FCFA
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {((Number(value) / totalAE) * 100).toFixed(1)}% of
+                            total
+                          </div>
+                        </>
+                      )}
+                    />
                   }
-                }}
-              />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
+                />
+                <Pie
+                  data={chartData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius="45%"
+                  outerRadius="70%"
+                  strokeWidth={2}
+                  stroke="hsl(var(--background))"
+                >
+                  <Label
+                    content={({ viewBox }) => {
+                      if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                        return (
+                          <text
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                          >
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className="fill-foreground text-xl sm:text-2xl md:text-3xl font-bold"
+                            >
+                              {formatCurrency(totalAE)}
+                            </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 20}
+                              className="fill-muted-foreground text-xs sm:text-sm"
+                            >
+                              Total AE
+                            </tspan>
+                          </text>
+                        );
+                      }
+                    }}
+                  />
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </div>
 
-        {/* Legend with correct colors */}
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <div
-              className="h-3 w-3 rounded-full"
+              className="h-3 w-3 rounded-full shrink-0"
               style={{ backgroundColor: "#fe9a00" }}
             />
-            <div className="flex flex-col">
-              <span className="text-xs font-medium">Engaged</span>
-              <span className="text-sm font-bold">
-                {formatCurrency(totalEngaged)} FCFA
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-medium truncate">Engaged</span>
+              <span className="text-xs sm:text-sm font-bold truncate">
+                {formatCurrency(totalEngaged)}
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div
-              className="h-3 w-3 rounded-full"
+              className="h-3 w-3 rounded-full shrink-0"
               style={{ backgroundColor: "#1449e6" }}
             />
-            <div className="flex flex-col">
-              <span className="text-xs font-medium">Available</span>
-              <span className="text-sm font-bold">
-                {formatCurrency(available)} FCFA
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-medium truncate">Available</span>
+              <span className="text-xs sm:text-sm font-bold truncate">
+                {formatCurrency(available)}
               </span>
             </div>
           </div>

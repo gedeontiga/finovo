@@ -108,17 +108,14 @@ export function MantineDataTable<T extends Record<string, any>>({
       const aValue = a[sortStatus.columnAccessor];
       const bValue = b[sortStatus.columnAccessor];
 
-      // Handle null/undefined
       if (aValue == null && bValue == null) return 0;
       if (aValue == null) return 1;
       if (bValue == null) return -1;
 
-      // Handle numbers
       if (typeof aValue === "number" && typeof bValue === "number") {
         return aValue - bValue;
       }
 
-      // Handle strings
       return String(aValue).localeCompare(String(bValue));
     });
 
@@ -142,18 +139,18 @@ export function MantineDataTable<T extends Record<string, any>>({
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {searchable && searchKeys.length > 0 && (
-          <div className="relative max-w-sm">
+          <div className="relative w-full sm:max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setPage(1); // Reset to first page on search
+                setPage(1);
               }}
-              className="pl-9"
+              className="pl-9 w-full"
             />
             {searchQuery && (
               <Button
@@ -168,48 +165,43 @@ export function MantineDataTable<T extends Record<string, any>>({
           </div>
         )}
 
-        <DataTable<T>
-          columns={enhancedColumns}
-          records={paginatedData}
-          totalRecords={sortedData.length}
-          recordsPerPage={pageSize}
-          page={page}
-          onPageChange={setPage}
-          recordsPerPageOptions={pageSizeOptions}
-          onRecordsPerPageChange={setPageSize}
-          sortStatus={sortStatus}
-          onSortStatusChange={setSortStatus}
-          onRowClick={
-            onRowClick ? ({ record }) => onRowClick(record) : undefined
-          }
-          minHeight={minHeight}
-          striped={striped}
-          highlightOnHover={highlightOnHover}
-          withTableBorder={withBorder}
-          withColumnBorders={false}
-          borderRadius="md"
-          shadow="sm"
-          styles={{
-            header: {
-              backgroundColor: "hsl(var(--muted) / 0.5)",
-              backdropFilter: "blur(8px)",
-            },
-            pagination: {
-              borderTop: "1px solid hsl(var(--border))",
-              padding: "1rem",
-            },
-          }}
-          rowClassName="cursor-pointer hover:bg-muted/50 transition-colors"
-          paginationText={({ from, to, totalRecords }) =>
-            `Showing ${from} to ${to} of ${totalRecords} entries`
-          }
-          noRecordsText="No records found"
-          loadingText="Loading..."
-        />
+        <div className="relative w-full overflow-hidden rounded-lg border border-border">
+          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-20rem)]">
+            <DataTable<T>
+              columns={enhancedColumns}
+              records={paginatedData}
+              totalRecords={sortedData.length}
+              recordsPerPage={pageSize}
+              page={page}
+              onPageChange={setPage}
+              recordsPerPageOptions={pageSizeOptions}
+              onRecordsPerPageChange={setPageSize}
+              sortStatus={sortStatus}
+              onSortStatusChange={setSortStatus}
+              onRowClick={
+                onRowClick ? ({ record }) => onRowClick(record) : undefined
+              }
+              minHeight={minHeight}
+              striped={striped}
+              highlightOnHover={highlightOnHover}
+              withTableBorder={false}
+              withColumnBorders={false}
+              borderRadius="none"
+              shadow="none"
+              rowClassName="cursor-pointer hover:bg-muted/50 transition-colors"
+              paginationText={({ from, to, totalRecords }) =>
+                `${from}-${to} of ${totalRecords}`
+              }
+              noRecordsText="No records found"
+              loadingText="Loading..."
+              paginationSize="sm"
+            />
+          </div>
+        </div>
       </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -217,11 +209,13 @@ export function MantineDataTable<T extends Record<string, any>>({
               record.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

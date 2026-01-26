@@ -61,6 +61,13 @@
   --sidebar-accent-foreground: oklch(0.2 0 0);
   --sidebar-border: oklch(0.92 0.01 255);
   --sidebar-ring: oklch(0.48 0.18 255);
+
+  /* DataTable specific variables for light mode */
+  --datatable-bg: oklch(1 0 0);
+  --datatable-header-bg: oklch(0.97 0.005 255);
+  --datatable-hover-bg: oklch(0.97 0.005 255);
+  --datatable-border: oklch(0.92 0.01 255);
+  --datatable-pagination-bg: oklch(1 0 0);
 }
 
 .dark {
@@ -112,6 +119,13 @@
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.25 0.02 255);
   --sidebar-ring: oklch(0.6 0.2 255);
+
+  /* DataTable specific variables for dark mode */
+  --datatable-bg: #0a0a0a;
+  --datatable-header-bg: oklch(0.18 0.02 255);
+  --datatable-hover-bg: oklch(0.18 0.02 255);
+  --datatable-border: oklch(0.25 0.02 255);
+  --datatable-pagination-bg: #0a0a0a;
 }
 
 @theme inline {
@@ -164,6 +178,25 @@
   /* Enhanced smooth scrolling */
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Ensure all text elements inherit foreground color */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  div,
+  td,
+  th,
+  li,
+  a,
+  label,
+  button {
+    color: inherit;
   }
 }
 
@@ -256,14 +289,137 @@
   }
 }
 
+/* Enhanced Mantine DataTable Theming - SSR-safe */
 .mantine-DataTable-root {
-  @apply rounded-lg border border-border overflow-hidden;
+  @apply rounded-lg overflow-hidden;
+}
+
+.mantine-DataTable-table {
+  @apply w-full;
+  background-color: var(--datatable-bg) !important;
 }
 
 .mantine-DataTable-header {
-  @apply bg-muted/50 backdrop-blur;
+  @apply sticky top-0 z-10;
+  background-color: var(--datatable-header-bg) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--datatable-border) !important;
+}
+
+.mantine-DataTable-thead tr {
+  @apply border-b;
+}
+
+.mantine-DataTable-thead th {
+  @apply text-left font-medium px-4 py-3;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground)) !important;
+}
+
+.mantine-DataTable-tbody tr {
+  @apply border-b transition-colors;
+  border-color: var(--datatable-border) !important;
+}
+
+.mantine-DataTable-tbody tr:hover {
+  background-color: var(--datatable-hover-bg) !important;
+}
+
+.mantine-DataTable-tbody td {
+  @apply px-4 py-3;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground)) !important;
 }
 
 .mantine-DataTable-pagination {
-  @apply border-t border-border bg-background;
+  background-color: var(--datatable-pagination-bg) !important;
+  border-top: 1px solid var(--datatable-border) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.mantine-DataTable-pagination * {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Mantine pagination buttons */
+.mantine-Pagination-control {
+  color: hsl(var(--foreground)) !important;
+  border-color: var(--datatable-border) !important;
+}
+
+.mantine-Pagination-control:hover:not([data-disabled]) {
+  background-color: var(--datatable-hover-bg) !important;
+}
+
+.mantine-Pagination-control[data-active] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* Select component in pagination */
+.mantine-Select-input {
+  background-color: var(--datatable-bg) !important;
+  border-color: var(--datatable-border) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+.mantine-Select-dropdown {
+  background-color: var(--datatable-bg) !important;
+  border-color: var(--datatable-border) !important;
+}
+
+.mantine-Select-option {
+  color: hsl(var(--foreground)) !important;
+}
+
+.mantine-Select-option:hover {
+  background-color: var(--datatable-hover-bg) !important;
+}
+
+.mantine-Select-option[data-selected] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .mantine-DataTable-root {
+    @apply text-xs;
+  }
+
+  .mantine-DataTable-thead th,
+  .mantine-DataTable-tbody td {
+    @apply px-2 py-2;
+    font-size: 0.75rem;
+  }
+
+  .mantine-DataTable-pagination {
+    padding: 0.5rem !important;
+  }
+}
+
+/* Smooth transitions */
+.mantine-DataTable-tbody tr,
+.mantine-DataTable-header {
+  transition: background-color 0.2s ease;
+}
+
+/* Scrollbar styling for tables */
+.mantine-DataTable-root ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.mantine-DataTable-root ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mantine-DataTable-root ::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 4px;
+}
+
+.mantine-DataTable-root ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
 }
