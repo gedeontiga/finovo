@@ -102,7 +102,7 @@ export function EngagementUpdateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-2xl p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-2">
-          <DialogTitle>Update Engagement</DialogTitle>
+          <DialogTitle className="text-primary">Update Engagement</DialogTitle>
           <DialogDescription>
             Modify the engaged amount for this budget line
           </DialogDescription>
@@ -116,10 +116,10 @@ export function EngagementUpdateDialog({
                   Program
                 </Label>
                 <div className="sm:col-span-3">
-                  <span className="font-mono font-semibold mr-2">
+                  <span className="font-mono text-secondary-foreground font-semibold mr-2">
                     {budgetLine.program || "N/A"}
                   </span>
-                  <span className="text-xs">
+                  <span className="text-xs text-muted-foreground">
                     {budgetLine.programName || "N/A"}
                   </span>
                 </div>
@@ -130,10 +130,12 @@ export function EngagementUpdateDialog({
                   Paragraph
                 </Label>
                 <div className="sm:col-span-3">
-                  <span className="font-mono font-bold text-primary mr-2">
+                  <span className="font-mono font-bold text-secondary-foreground mr-2">
                     {budgetLine.paragraph}
                   </span>
-                  <span className="text-xs">{budgetLine.paragraphName}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {budgetLine.paragraphName}
+                  </span>
                 </div>
               </div>
             </div>
@@ -189,7 +191,10 @@ export function EngagementUpdateDialog({
             {/* Engagement Input */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="engaged" className="text-base font-semibold">
+                <Label
+                  htmlFor="engaged"
+                  className="text-base text-primary-foreground font-semibold"
+                >
                   New Engagement Amount
                 </Label>
                 <Input
@@ -197,7 +202,7 @@ export function EngagementUpdateDialog({
                   type="number"
                   value={engaged}
                   onChange={(e) => setEngaged(Number(e.target.value))}
-                  className="font-mono text-lg h-12"
+                  className="font-mono text-secondary-foreground text-lg h-12"
                   min="0"
                   max={budgetLine.ae}
                   step="0.01"
@@ -248,7 +253,9 @@ export function EngagementUpdateDialog({
               {/* Execution Progress */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">Execution Progress</span>
+                  <span className="font-medium text-secondary-foreground">
+                    Execution Progress
+                  </span>
                   <Badge
                     variant={
                       isCritical
@@ -279,7 +286,7 @@ export function EngagementUpdateDialog({
             </div>
           </div>
         </ScrollArea>
-        <DialogFooter className="p-6 pt-2 border-t mt-auto gap-2">
+        <DialogFooter className="p-6 text-secondary-foreground pt-2 border-t mt-auto gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

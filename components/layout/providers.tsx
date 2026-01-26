@@ -1,13 +1,16 @@
-'use client';
-import { ClerkProvider } from '@clerk/nextjs';
-import { dark } from '@clerk/themes';
-import { useTheme } from 'next-themes';
-import React from 'react';
-import { ActiveThemeProvider } from '../active-theme';
+"use client";
+
+import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
+import React from "react";
+import { ActiveThemeProvider } from "../active-theme";
+// 1. Import MantineProvider
+import { MantineProvider } from "@mantine/core";
 
 export default function Providers({
   activeThemeValue,
-  children
+  children,
 }: {
   activeThemeValue: string;
   children: React.ReactNode;
@@ -20,10 +23,11 @@ export default function Providers({
       <ActiveThemeProvider initialTheme={activeThemeValue}>
         <ClerkProvider
           appearance={{
-            baseTheme: resolvedTheme === 'dark' ? dark : undefined
+            baseTheme: resolvedTheme === "dark" ? dark : undefined,
           }}
         >
-          {children}
+          {/* 2. Wrap children with MantineProvider */}
+          <MantineProvider>{children}</MantineProvider>
         </ClerkProvider>
       </ActiveThemeProvider>
     </>

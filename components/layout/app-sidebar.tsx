@@ -1,9 +1,9 @@
-'use client';
+"use client";
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger
-} from '@/components/ui/collapsible';
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -26,25 +26,25 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarRail
-} from '@/components/ui/sidebar';
-import { UserAvatarProfile } from '@/components/user-avatar-profile';
-import { navItems } from '@/config/nav-config';
-import { useMediaQuery } from '@/hooks/use-media-query';
-import { useUser } from '@clerk/nextjs';
-import { useFilteredNavItems } from '@/hooks/use-nav';
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { UserAvatarProfile } from "@/components/user-avatar-profile";
+import { navItems } from "@/config/nav-config";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useUser } from "@clerk/nextjs";
+import { useFilteredNavItems } from "@/hooks/use-nav";
 import {
   IconChevronRight,
   IconChevronsDown,
   IconLogout,
-  IconUserCircle
-} from '@tabler/icons-react';
-import { SignOutButton } from '@clerk/nextjs';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import * as React from 'react';
-import { Icons } from '../icons';
-import type { NavItem } from '@/types';
+  IconUserCircle,
+} from "@tabler/icons-react";
+import { SignOutButton } from "@clerk/nextjs";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import * as React from "react";
+import { Icons } from "../icons";
+import type { NavItem } from "@/types";
 
 export default function AppSidebar() {
   const pathname = usePathname();
@@ -54,7 +54,7 @@ export default function AppSidebar() {
   const filteredItems = useFilteredNavItems(navItems);
 
   return (
-    <Sidebar collapsible='icon' className="border-r border-border/50">
+    <Sidebar collapsible="icon" className="border-r border-border/50">
       {/* Enhanced Header with Logo */}
       <SidebarHeader className="border-b border-border/50 bg-linear-to-br from-primary/5 to-transparent">
         <div className="flex items-center gap-3 px-3 py-4 group cursor-pointer">
@@ -70,19 +70,23 @@ export default function AppSidebar() {
             <span className="font-bold text-xl bg-linear-to-r from-[#fe9a00] to-[#ffb84d] bg-clip-text text-transparent">
               Finovo
             </span>
-            <span className="text-xs text-muted-foreground">Financial Platform</span>
+            <span className="text-xs text-muted-foreground">
+              Financial Platform
+            </span>
           </div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent className='overflow-x-hidden'>
+      <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
           <SidebarGroupLabel className="text-xs font-semibold tracking-wider uppercase text-muted-foreground/70">
             Overview
           </SidebarGroupLabel>
           <SidebarMenu>
             {filteredItems.map((item) => {
-              const Icon = item.icon ? Icons[item.icon as keyof typeof Icons] : Icons.logo;
+              const Icon = item.icon
+                ? Icons[item.icon as keyof typeof Icons]
+                : Icons.logo;
               const isActive = pathname === item.url;
 
               return item?.items && item?.items?.length > 0 ? (
@@ -90,7 +94,7 @@ export default function AppSidebar() {
                   key={item.title}
                   asChild
                   defaultOpen={item.isActive}
-                  className='group/collapsible'
+                  className="group/collapsible"
                 >
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
@@ -99,9 +103,11 @@ export default function AppSidebar() {
                         isActive={isActive}
                         className="hover:bg-primary/10 transition-all duration-200 data-[active=true]:bg-linear-to-r data-[active=true]:from-primary/15 data-[active=true]:to-primary/5 data-[active=true]:border-l-2 data-[active=true]:border-primary"
                       >
-                        {item.icon && <Icon className="transition-transform duration-200 group-hover/collapsible:scale-110" />}
+                        {item.icon && (
+                          <Icon className="transition-transform duration-200 group-hover/collapsible:scale-110" />
+                        )}
                         <span className="font-medium">{item.title}</span>
-                        <IconChevronRight className='ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90' />
+                        <IconChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
@@ -152,30 +158,30 @@ export default function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
-                  size='lg'
-                  className='data-[state=open]:bg-primary/10 data-[state=open]:text-primary hover:bg-primary/10 transition-all duration-200'
+                  size="lg"
+                  className="data-[state=open]:bg-primary/10 data-[state=open]:text-primary hover:bg-primary/10 transition-all duration-200"
                 >
                   {user && (
                     <UserAvatarProfile
-                      className='h-8 w-8 rounded-lg border-2 border-primary/20'
+                      className="h-8 w-8 rounded-lg border-2 border-primary/20"
                       showInfo
                       user={user}
                     />
                   )}
-                  <IconChevronsDown className='ml-auto size-4' />
+                  <IconChevronsDown className="ml-auto size-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className='w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg shadow-lg border-border/50'
-                side='bottom'
-                align='end'
+                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg shadow-lg border-border/50"
+                side="bottom"
+                align="end"
                 sideOffset={4}
               >
-                <DropdownMenuLabel className='p-0 font-normal'>
-                  <div className='px-1 py-1.5 bg-linear-to-br from-primary/5 to-transparent'>
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="px-1 py-1.5 bg-linear-to-br from-primary/5 to-transparent">
                     {user && (
                       <UserAvatarProfile
-                        className='h-8 w-8 rounded-lg'
+                        className="h-8 w-8 rounded-lg"
                         showInfo
                         user={user}
                       />
@@ -186,17 +192,17 @@ export default function AppSidebar() {
 
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    onClick={() => router.push('/dashboard/profile')}
+                    onClick={() => router.push("/dashboard/profile")}
                     className="cursor-pointer hover:bg-primary/10 transition-colors"
                   >
-                    <IconUserCircle className='mr-2 h-4 w-4' />
+                    <IconUserCircle className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer hover:bg-destructive/10 text-destructive focus:text-destructive transition-colors">
-                  <IconLogout className='mr-2 h-4 w-4' />
-                  <SignOutButton redirectUrl='/' />
+                  <IconLogout className="mr-2 h-4 w-4" />
+                  <SignOutButton redirectUrl="/sign-in" />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

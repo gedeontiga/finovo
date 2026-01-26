@@ -1,3 +1,7 @@
+@import "@mantine/core/styles.css";
+@import "@mantine/notifications/styles.css";
+@import "mantine-datatable/styles.css";
+
 @import "tailwindcss";
 
 @import "tw-animate-css";
@@ -250,4 +254,16 @@
     transform: scale(1.02);
     border-color: hsl(var(--primary) / 0.3);
   }
+}
+
+.mantine-DataTable-root {
+  @apply rounded-lg border border-border overflow-hidden;
+}
+
+.mantine-DataTable-header {
+  @apply bg-muted/50 backdrop-blur;
+}
+
+.mantine-DataTable-pagination {
+  @apply border-t border-border bg-background;
 }
