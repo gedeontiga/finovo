@@ -1,14 +1,48 @@
 services:
   postgres:
     image: postgres:latest
+    container_name: finovo_postgres
     ports:
-      - "5432:5433"
+      - "5432:5432"
     environment:
-      - POSTGRES_USERNAME=${POSTGRES_USERNAME}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DATABASE=${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    volumes:
+      # CHANGED: Mount to /var/lib/postgresql, NOT /var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     networks:
       - finovo_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finovo_app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DATABASE}
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - finovo_network
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+
 networks:
   finovo_network:
     driver: bridge
+
+volumes:
+  postgres_data:
