@@ -1,15 +1,15 @@
 services:
   postgres:
-    image: postgres:latest
+    # PIN THE VERSION to prevent future breaking changes
+    image: postgres:18-alpine
     container_name: finovo_postgres
-    ports:
-      - "5432:5432"
+    restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DATABASE}
     volumes:
-      # CHANGED: Mount to /var/lib/postgresql, NOT /var/lib/postgresql/data
+      # Correct mount path for Postgres 18+
       - postgres_data:/var/lib/postgresql
     networks:
       - finovo_network
@@ -24,10 +24,13 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: finovo_app
+    restart: always
     ports:
       - "3000:3000"
     environment:
+      # Use the container_name "postgres" as the host
       DATABASE_URL: postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DATABASE}
+      NODE_ENV: production
     env_file:
       - .env
     depends_on:
@@ -35,10 +38,7 @@ services:
         condition: service_healthy
     networks:
       - finovo_network
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
+    # NOTE: Volumes removed. In prod, we use the code inside the image, not local files.
 
 networks:
   finovo_network:

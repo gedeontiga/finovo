@@ -1,34 +1,34 @@
-import { cn } from '@/lib/utils';
-import { SignUp as ClerkSignUpForm } from '@clerk/nextjs';
-import { Metadata } from 'next';
-import { InteractiveGridPattern } from './components/interactive-grid';
-import { Sparkles, Upload, BarChart3, Calculator } from 'lucide-react';
-import { FloatingThemeToggle } from './components/floating-theme-toggle';
+import { cn } from "@/lib/utils";
+import { SignUp as Waitlist } from "@clerk/nextjs";
+import { Metadata } from "next";
+import { InteractiveGridPattern } from "./components/interactive-grid";
+import { Sparkles, Upload, BarChart3, Calculator } from "lucide-react";
+import { FloatingThemeToggle } from "./components/floating-theme-toggle";
 
 export const metadata: Metadata = {
-  title: 'Sign Up | Finovo',
-  description: 'Create your Finovo account and start your financial journey.'
+  title: "Sign Up | Finovo",
+  description: "Create your Finovo account and start your financial journey.",
 };
 
 export default function SignUpViewPage() {
   return (
-    <div className='relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0 overflow-hidden'>
+    <div className="relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0 overflow-hidden">
       {/* Floating Theme Toggle */}
       <FloatingThemeToggle />
 
       {/* Left Side - Branding & Interactive Background */}
-      <div className='bg-muted relative hidden h-full flex-col p-10 lg:flex dark:border-r overflow-hidden'>
+      <div className="bg-muted relative hidden h-full flex-col p-10 lg:flex dark:border-r overflow-hidden">
         {/* Gradient Background */}
-        <div className='absolute inset-0 bg-linear-to-br from-[#1449e6] via-[#0a66c2] to-[#0a0a0a] z-0' />
+        <div className="absolute inset-0 bg-linear-to-br from-[#1449e6] via-[#0a66c2] to-[#0a0a0a] z-0" />
 
         {/* Overlay gradient for depth */}
-        <div className='absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent z-0' />
+        <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent z-0" />
 
         {/* Interactive Grid - Behind everything */}
         <InteractiveGridPattern
           className={cn(
-            'mask-[radial-gradient(500px_circle_at_center,white,transparent)]',
-            'inset-x-0 inset-y-[0%] h-full skew-y-6 z-0'
+            "mask-[radial-gradient(500px_circle_at_center,white,transparent)]",
+            "inset-x-0 inset-y-[0%] h-full skew-y-6 z-0",
           )}
         />
 
@@ -56,9 +56,11 @@ export default function SignUpViewPage() {
               Take control of your finances, simply
             </h1>
             <p className="text-lg text-white/80">
-              Create your <span className="font-bold bg-linear-to-r from-[#fe9a00] via-[#ffb84d] to-[#ffffff] bg-clip-text text-transparent">
+              Create your{" "}
+              <span className="font-bold bg-linear-to-r from-[#fe9a00] via-[#ffb84d] to-[#ffffff] bg-clip-text text-transparent">
                 Finovo
-              </span> account and move beyond spreadsheets.
+              </span>{" "}
+              account and move beyond spreadsheets.
             </p>
           </div>
 
@@ -90,7 +92,9 @@ export default function SignUpViewPage() {
                 key={idx}
                 className="flex items-center gap-3 text-white/80 group/item hover:text-white transition-colors"
               >
-                <div className={`${benefit.color} group-hover/item:scale-110 transition-transform`}>
+                <div
+                  className={`${benefit.color} group-hover/item:scale-110 transition-transform`}
+                >
                   <benefit.icon className="w-6 h-6" />
                 </div>
                 <span>{benefit.text}</span>
@@ -105,21 +109,18 @@ export default function SignUpViewPage() {
       </div>
 
       {/* Right Side - Sign Up Form */}
-      <div className='flex h-full items-center justify-center p-4 lg:p-8 bg-background'>
-        <div className='flex w-full max-w-md flex-col items-center justify-center animate-slideInRight'>
+      <div className="flex h-full items-center justify-center p-4 lg:p-8 bg-background">
+        <div className="flex w-full max-w-md flex-col items-center justify-center animate-slideInRight">
           {/* Clerk Form with enhanced styling */}
           <div className="w-full">
-            <ClerkSignUpForm
+            <Waitlist
               appearance={{
                 elements: {
                   formButtonPrimary:
-                    'bg-gradient-to-r from-[#1449e6] to-[#0a66c2] hover:from-[#0a66c2] hover:to-[#1449e6] transition-all duration-300 shadow-lg hover:shadow-xl',
-                  card: 'shadow-xl',
-                  footerActionLink: 'text-[#1449e6] hover:text-[#0a66c2]'
-                }
-              }}
-              initialValues={{
-                emailAddress: 'your_mail@example.com'
+                    "bg-gradient-to-r from-[#1449e6] to-[#0a66c2] hover:from-[#0a66c2] hover:to-[#1449e6] transition-all duration-300 shadow-lg hover:shadow-xl",
+                  card: "shadow-xl",
+                  footerActionLink: "text-[#1449e6] hover:text-[#0a66c2]",
+                },
               }}
             />
           </div>

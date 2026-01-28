@@ -170,15 +170,6 @@ export default async function BudgetPage({
                   </span>
                   <span className="sm:hidden">Budget Lines</span>
                 </CardTitle>
-                <CardDescription className="mt-1 text-xs sm:text-sm">
-                  <span className="hidden sm:inline">
-                    Click on any row to edit • Hover over row number to delete •
-                    Swipe left on mobile
-                  </span>
-                  <span className="sm:hidden">
-                    Tap to edit • Swipe left to delete
-                  </span>
-                </CardDescription>
               </div>
             </div>
           </CardHeader>
