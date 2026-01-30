@@ -132,7 +132,7 @@ export default async function BudgetPage({
               Manage budget lines with advanced filtering and sorting
             </p>
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex justify-between gap-2 w-full sm:w-auto">
             <CreateEngagementForm
               programs={formOptions.programs}
               actions={formOptions.actions}
