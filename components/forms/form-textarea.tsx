@@ -1,20 +1,21 @@
-'use client';
+"use client";
 
-import { FieldPath, FieldValues } from 'react-hook-form';
+import { FieldPath, FieldValues } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import { BaseFormFieldProps, TextareaConfig } from '@/types/base-form';
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { BaseFormFieldProps, TextareaConfig } from "@/types/base-form";
+import { cn } from "@/lib/utils";
 
 interface FormTextareaProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends BaseFormFieldProps<TFieldValues, TName> {
   placeholder?: string;
   config?: TextareaConfig;
@@ -22,7 +23,7 @@ interface FormTextareaProps<
 
 function FormTextarea<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   control,
   name,
@@ -32,13 +33,13 @@ function FormTextarea<
   placeholder,
   config = {},
   disabled,
-  className
+  className,
 }: FormTextareaProps<TFieldValues, TName>) {
   const {
     maxLength,
     showCharCount = true,
     rows = 4,
-    resize = 'vertical'
+    resize = "vertical",
   } = config;
 
   return (
@@ -46,32 +47,41 @@ function FormTextarea<
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className={className}>
+        <FormItem className={cn("w-full", className)}>
           {label && (
-            <FormLabel>
-              {label}
-              {required && <span className='ml-1 text-red-500'>*</span>}
+            <FormLabel className="text-sm sm:text-base flex items-baseline gap-1">
+              <span className="wrap-break-word">{label}</span>
+              {required && (
+                <span className="text-red-500 shrink-0" aria-label="required">
+                  *
+                </span>
+              )}
             </FormLabel>
           )}
           <FormControl>
-            <div className='space-y-2'>
+            <div className="w-full space-y-2">
               <Textarea
                 placeholder={placeholder}
                 disabled={disabled}
                 rows={rows}
                 style={{ resize }}
                 maxLength={maxLength}
+                className="w-full text-sm sm:text-base min-h-20"
                 {...field}
               />
               {showCharCount && maxLength && (
-                <div className='text-muted-foreground text-right text-sm'>
+                <div className="text-muted-foreground text-right text-xs sm:text-sm">
                   {field.value?.length || 0} / {maxLength}
                 </div>
               )}
             </div>
           </FormControl>
-          {description && <FormDescription>{description}</FormDescription>}
-          <FormMessage />
+          {description && (
+            <FormDescription className="text-xs sm:text-sm wrap-break-word">
+              {description}
+            </FormDescription>
+          )}
+          <FormMessage className="text-xs sm:text-sm wrap-break-word" />
         </FormItem>
       )}
     />

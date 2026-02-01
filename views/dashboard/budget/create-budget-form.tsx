@@ -67,7 +67,6 @@ export function CreateEngagementForm({
   const selectedProgram = form.watch("programId");
   const selectedAction = form.watch("actionId");
   const selectedActivity = form.watch("activityId");
-  const selectedAdmin = form.watch("adminUnitId");
 
   // Filter actions by selected program
   const filteredActions = useMemo(() => {
@@ -140,9 +139,6 @@ export function CreateEngagementForm({
   const onSubmit = async (data: EngagementFormData) => {
     setLoading(true);
     try {
-      // Create task name from description
-      const taskName = data.description.substring(0, 100);
-
       const result = await createBudgetLineAction({
         taskId: parseInt(data.activityId), // This will need to be updated to create/find task
         adminUnitId: data.adminUnitId ? parseInt(data.adminUnitId) : undefined,

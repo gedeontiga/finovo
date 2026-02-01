@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import { FieldPath, FieldValues } from 'react-hook-form';
+import { FieldPath, FieldValues } from "react-hook-form";
 import {
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
-} from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { BaseFormFieldProps, RadioGroupOption } from '@/types/base-form';
+  FormMessage,
+} from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { BaseFormFieldProps, RadioGroupOption } from "@/types/base-form";
 
 interface FormRadioGroupProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends BaseFormFieldProps<TFieldValues, TName> {
   options: RadioGroupOption[];
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: "horizontal" | "vertical";
 }
 
 function FormRadioGroup<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   control,
   name,
@@ -31,9 +31,9 @@ function FormRadioGroup<
   description,
   required,
   options,
-  orientation = 'vertical',
+  orientation = "vertical",
   disabled,
-  className
+  className,
 }: FormRadioGroupProps<TFieldValues, TName>) {
   return (
     <FormField
@@ -42,33 +42,41 @@ function FormRadioGroup<
       render={({ field }) => (
         <FormItem className={className}>
           {label && (
-            <FormLabel>
+            <FormLabel className="text-sm sm:text-base font-medium">
               {label}
-              {required && <span className='ml-1 text-red-500'>*</span>}
+              {required && <span className="ml-1 text-red-500">*</span>}
             </FormLabel>
           )}
-          {description && <FormDescription>{description}</FormDescription>}
+          {description && (
+            <FormDescription className="text-xs sm:text-sm leading-relaxed">
+              {description}
+            </FormDescription>
+          )}
           <FormControl>
             <RadioGroup
               onValueChange={field.onChange}
               value={field.value}
               disabled={disabled}
               className={
-                orientation === 'horizontal'
-                  ? 'flex flex-row space-x-6'
-                  : 'space-y-2'
+                orientation === "horizontal"
+                  ? "flex flex-col sm:flex-row gap-3 sm:gap-6"
+                  : "space-y-3"
               }
             >
               {options.map((option) => (
-                <div key={option.value} className='flex items-center space-x-2'>
+                <div
+                  key={option.value}
+                  className="flex items-start space-x-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors touch-manipulation"
+                >
                   <RadioGroupItem
                     value={option.value}
                     id={`${name}-${option.value}`}
                     disabled={option.disabled}
+                    className="mt-0.5 h-5 w-5 sm:h-6 sm:w-6"
                   />
                   <Label
                     htmlFor={`${name}-${option.value}`}
-                    className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                    className="text-sm sm:text-base leading-tight font-medium cursor-pointer flex-1 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     {option.label}
                   </Label>
@@ -76,7 +84,7 @@ function FormRadioGroup<
               ))}
             </RadioGroup>
           </FormControl>
-          <FormMessage />
+          <FormMessage className="text-xs sm:text-sm" />
         </FormItem>
       )}
     />

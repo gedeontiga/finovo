@@ -130,7 +130,10 @@ function identifyColumns(
         else if (val.includes("activit")) mapping.activity = colIdx;
         else if (val.includes("tache") || val.includes("tâche"))
           mapping.task = colIdx;
-        else if (val === "code" || val.length === 6) {
+        // FIX: Accept "135000" as a valid Admin Code header (Specific to Program 119)
+        else if (val === "code" || val === "135000") {
+          // If we haven't found Admin Code yet, this is it.
+          // Unless we are very far to the right (likely Paragraph code if > col 6 and Admin is still missing)
           // But standard layout puts Admin around col 3 or 4.
           if (!mapping.adminCode) mapping.adminCode = colIdx;
           else mapping.paraCode = colIdx;
@@ -148,6 +151,7 @@ function identifyColumns(
   if (!mapping.action) mapping.action = 1;
   if (!mapping.activity) mapping.activity = 2;
 
+  // Fallback: If we found ParaCode but missed AdminCode (because P119 header was weird and we missed the specific check)
   // We can assume Admin Code is usually 2 columns before Paragraph Code
   if (mapping.paraCode && !mapping.adminCode && mapping.paraCode > 2) {
     mapping.adminCode = mapping.paraCode - 2;

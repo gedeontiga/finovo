@@ -20,10 +20,19 @@ export async function importBudgetAction(formData: FormData) {
     if (!file) throw new Error("No file provided");
 
     const buffer = await file.arrayBuffer();
-    const parsedData = await parseBudgetFile(buffer); // Use corrected function name
+    const parsedData = await parseBudgetFile(buffer);
+    const yearRegex = /(19|20)\d{2}/; // matches 1900–2099
+    const match = file.name.match(yearRegex);
 
-    // Ensure Fiscal Year exists
-    const currentYear = new Date().getFullYear();
+    let currentYear = new Date().getFullYear();
+    if (match) {
+      const year = Number(match[0]);
+
+      // Optional sanity check (adjust range as needed)
+      if (year >= 2000 && year <= currentYear + 2) {
+        currentYear = year;
+      }
+    }
     let fiscalYear = await db.query.fiscalYears.findFirst({
       where: eq(fiscalYears.year, currentYear),
     });
